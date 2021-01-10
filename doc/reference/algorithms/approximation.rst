@@ -46,6 +46,16 @@ Clustering
    average_clustering
 
 
+Cuts
+----
+.. automodule:: networkx.algorithms.approximation.kcutsets
+.. autosummary::
+   :toctree: generated/
+
+   minimum_multiway_cut
+   minimum_k_cut
+
+
 Distance Measures
 -----------------
 .. automodule:: networkx.algorithms.approximation.distance_measures
@@ -63,16 +73,6 @@ Dominating Set
 
    min_weighted_dominating_set
    min_edge_dominating_set
-
-Cuts
-----
-.. automodule:: networkx.algorithms.approximation.kcutsets
-.. autosummary::
-   :toctree: generated/
-
-   minimum_multiway_cut
-   minimum_k_cut
-
 
 Matching
 --------
