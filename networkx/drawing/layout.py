@@ -34,6 +34,7 @@ __all__ = [
     "multipartite_layout",
 ]
 
+
 def _process_params(G, center, dim):
     # Some boilerplate code.
     import numpy as np
@@ -442,6 +443,7 @@ def fruchterman_reingold_layout(
     >>> pos = nx.fruchterman_reingold_layout(G)
     """
     import numpy as np
+
     G, center = _process_params(G, center, dim)
 
     if fixed is not None:
@@ -495,16 +497,19 @@ def fruchterman_reingold_layout(
             pos = _fruchterman_reingold(
                 A, k, pos_arr, fixed, iterations, threshold, dim, seed
             )
-        else: # Otherwise, we must use our extended function
-            mass_array = np.asarray([G.nodes[node][node_weight] for node in G], dtype="f")
+        else:  # Otherwise, we must use our extended function
+            mass_array = np.asarray(
+                [G.nodes[node][node_weight] for node in G], dtype="f"
+            )
             # Generate the matrix $B$ by taking the outer product of mass_array with itself (so $B_{ij} = m_i m_j$)
             B = np.tensordot(mass_array, mass_array, axes=0)
-            pos = _fruchterman_reingold_extended(A, B, k, pos_arr, fixed, iterations, threshold, dim, seed)
+            pos = _fruchterman_reingold_extended(
+                A, B, k, pos_arr, fixed, iterations, threshold, dim, seed
+            )
     if fixed is None and scale is not None:
         pos = rescale_layout(pos, scale=scale) + center
     pos = dict(zip(G, pos))
     return pos
-
 
 
 spring_layout = fruchterman_reingold_layout
