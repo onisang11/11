@@ -399,3 +399,16 @@ class TestLayout:
         assert s_vpos == {0: (-1, -1), 1: (1, 1), 2: (0, 0)}
         s_vpos = nx.rescale_layout_dict(vpos, scale=2)
         assert s_vpos == {0: (-2, -2), 1: (2, 2), 2: (0, 0)}
+
+    def test_weighted_spring_layout(self):
+        hyper = nx.hypercube_graph(5)
+        for node in hyper:
+            hyper.nodes[node]['node_weight'] = 1
+
+        same_mass = nx.drawing.fruchterman_reingold_layout(hyper, node_weight='node_weight', seed=1)
+
+        hyper.nodes[(0, 0, 0, 0, 0)]['node_weight'] = 100
+        dif_mass = nx.drawing.fruchterman_reingold_layout(hyper, node_weight='node_weight', seed=1)
+        first_distance = np.linalg.norm(same_mass[(0, 0, 0, 0, 0)] - same_mass[(0, 0, 0, 0, 1)])
+        second_distance = np.linalg.norm(dif_mass[(0, 0,  0, 0, 0)] - dif_mass[(0, 0, 0, 0, 1)])
+        assert first_distance < second_distance
