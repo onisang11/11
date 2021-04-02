@@ -474,7 +474,7 @@ def fruchterman_reingold_layout(
 
     try:
         # Sparse matrix
-        if len(G) < 500 or node_weight is not None:  # sparse solver for large graphs
+        if len(G) < 500 or B is not None:  # sparse solver for large graphs
             raise ValueError
         A = nx.to_scipy_sparse_matrix(G, weight=weight, dtype="f")
         if k is None and fixed is not None:
