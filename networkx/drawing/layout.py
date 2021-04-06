@@ -499,10 +499,10 @@ def fruchterman_reingold_layout(
             )
         else:  # Otherwise, we must use our extended function
             mass_array = np.asarray(
-                [G.nodes[node][node_weight] for node in G], dtype="f"
+                [G.nodes[node][node_weight] for node in G], dtype=float
             )
             # Generate the matrix $B$ by taking the outer product of mass_array with itself (so $B_{ij} = m_i m_j$)
-            B = np.tensordot(mass_array, mass_array, axes=0)
+            B = np.outer(mass_array, mass_array)
             pos = _fruchterman_reingold_extended(
                 A, B, k, pos_arr, fixed, iterations, threshold, dim, seed
             )
