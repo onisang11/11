@@ -342,7 +342,7 @@ def bipartite_layout(
     return pos
 
 
-@random_state(10)
+@random_state(11)
 def fruchterman_reingold_layout(
     G,
     k=None,
@@ -351,6 +351,7 @@ def fruchterman_reingold_layout(
     iterations=50,
     threshold=1e-4,
     weight="weight",
+    node_weight=None,
     scale=1,
     center=None,
     dim=2,
@@ -402,6 +403,12 @@ def fruchterman_reingold_layout(
     weight : string or None   optional (default='weight')
         The edge attribute that holds the numerical value used for
         the edge weight.  If None, then all edge weights are 1.
+
+    node_weight : string or None   optional (default= None)
+        The node attribute that holds the numerical value used for
+        the node weight.  If None, then all node weights are 1. If
+        the graph is large (>500 nodes), a non-None value is not
+        recommended for reasons of computational efficiency.
 
     scale : number or None (default: 1)
         Scale factor for positions. Not used unless `fixed is None`.
@@ -469,9 +476,9 @@ def fruchterman_reingold_layout(
 
     try:
         # Sparse matrix
-        if len(G) < 500:  # sparse solver for large graphs
+        if len(G) < 500 or node_weight is not None:  # sparse solver for large graphs
             raise ValueError
-        A = nx.to_scipy_sparse_matrix(G, weight=weight, dtype="f")
+        A = nx.to_scipy_sparse_matrix(G, weight=weight, dtype=float)
         if k is None and fixed is not None:
             # We must adjust k by domain size for layouts not near 1x1
             nnodes, _ = A.shape
@@ -485,9 +492,20 @@ def fruchterman_reingold_layout(
             # We must adjust k by domain size for layouts not near 1x1
             nnodes, _ = A.shape
             k = dom_size / np.sqrt(nnodes)
-        pos = _fruchterman_reingold(
-            A, k, pos_arr, fixed, iterations, threshold, dim, seed
-        )
+        # In the case where no node_weight is given the standard fruchterman_reingold function can be used
+        if node_weight is None:
+            pos = _fruchterman_reingold(
+                A, k, pos_arr, fixed, iterations, threshold, dim, seed
+            )
+        else:  # Otherwise, we must use our extended function
+            mass_array = np.asarray(
+                [G.nodes[node][node_weight] for node in G], dtype=float
+            )
+            # Generate the matrix $B$ by taking the outer product of mass_array with itself (so $B_{ij} = m_i m_j$)
+            B = np.outer(mass_array, mass_array)
+            pos = _fruchterman_reingold_extended(
+                A, B, k, pos_arr, fixed, iterations, threshold, dim, seed
+            )
     if fixed is None and scale is not None:
         pos = rescale_layout(pos, scale=scale) + center
     pos = dict(zip(G, pos))
@@ -543,6 +561,69 @@ def _fruchterman_reingold(
         # displacement "force"
         displacement = np.einsum(
             "ijk,ij->ik", delta, (k * k / distance ** 2 - A * distance / k)
+        )
+        # update positions
+        length = np.linalg.norm(displacement, axis=-1)
+        length = np.where(length < 0.01, 0.1, length)
+        delta_pos = np.einsum("ij,i->ij", displacement, t / length)
+        if fixed is not None:
+            # don't change positions of fixed nodes
+            delta_pos[fixed] = 0.0
+        pos += delta_pos
+        # cool temperature
+        t -= dt
+        err = np.linalg.norm(delta_pos) / nnodes
+        if err < threshold:
+            break
+    return pos
+
+
+@random_state(8)
+def _fruchterman_reingold_extended(
+    A, B, k=None, pos=None, fixed=None, iterations=50, threshold=1e-4, dim=2, seed=None
+):
+    # Position nodes in adjacency matrix A using Fruchterman-Reingold with variable anti-gravity masses
+    # Entry point for NetworkX graph is fruchterman_reingold_layout()
+    import numpy as np
+
+    try:
+        nnodes, _ = A.shape
+    except AttributeError as e:
+        msg = "fruchterman_reingold() takes an adjacency matrix as input"
+        raise nx.NetworkXError(msg) from e
+
+    if pos is None:
+        # random initial positions
+        pos = np.asarray(seed.rand(nnodes, dim), dtype=A.dtype)
+    else:
+        # make sure positions are of same type as matrix
+        pos = pos.astype(A.dtype)
+
+    # optimal distance between nodes
+    if k is None:
+        k = np.sqrt(1.0 / nnodes)
+    # the initial "temperature"  is about .1 of domain area (=1x1)
+    # this is the largest step allowed in the dynamics.
+    # We need to calculate this in case our fixed positions force our domain
+    # to be much bigger than 1x1
+    t = max(max(pos.T[0]) - min(pos.T[0]), max(pos.T[1]) - min(pos.T[1])) * 0.1
+    # simple cooling scheme.
+    # linearly step down by dt on each iteration so last iteration is size dt.
+    dt = t / float(iterations + 1)
+    delta = np.zeros((pos.shape[0], pos.shape[0], pos.shape[1]), dtype=A.dtype)
+    # the inscrutable (but fast) version
+    # this is still O(V^2)
+    # could use multilevel methods to speed this up significantly
+    for iteration in range(iterations):
+        # matrix of difference between points
+        delta = pos[:, np.newaxis, :] - pos[np.newaxis, :, :]
+        # distance between points
+        distance = np.linalg.norm(delta, axis=-1)
+        # enforce minimum distance of 0.01
+        np.clip(distance, 0.01, None, out=distance)
+        # displacement "force"
+        displacement = np.einsum(
+            "ijk,ij->ik", delta, (B * (k * k / distance ** 2) - A * distance / k)
         )
         # update positions
         length = np.linalg.norm(displacement, axis=-1)
