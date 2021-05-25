@@ -1,11 +1,10 @@
+from networkx.exception import NetworkXError
+from networkx.generators.degree_seq import havel_hakimi_graph
+import networkx as nx
 import pytest
 
 np = pytest.importorskip("numpy")
 pytest.importorskip("scipy")
-
-import networkx as nx
-from networkx.generators.degree_seq import havel_hakimi_graph
-from networkx.exception import NetworkXError
 
 
 def test_incidence_matrix_simple():
@@ -65,7 +64,17 @@ class TestGraphMatrix:
              [1, 0, 0, 0, 0],
              [0, 0, 0, 0, 0]]
         )
+
+        cls.AN = np.array(
+            [[0., 0.40824829, 0.40824829, 0.57735027, 0.],
+             [0.40824829, 0., 0.5, 0., 0.],
+             [0.40824829, 0.5, 0., 0., 0.],
+             [0.57735027, 0., 0., 0., 0.],
+             [0., 0., 0., 0., 0.]]
+        )
+
         # fmt: on
+
         cls.WG = havel_hakimi_graph(deg)
         cls.WG.add_edges_from(
             (u, v, {"weight": 0.5, "other": 0.3}) for (u, v) in cls.G.edges()
@@ -292,3 +301,8 @@ class TestGraphMatrix:
         np.testing.assert_equal(
             nx.adj_matrix(self.no_edges_G, nodelist=[1, 3]).todense(), self.no_edges_A
         )
+
+    def test_normalized_adjacency_matrix(self):
+        "Conversion to normalized adjacency matrix"
+        npt.assert_almost_equal(nx.normalized_adjacency_matrix(self.G).todense(),
+                                self.AN)
