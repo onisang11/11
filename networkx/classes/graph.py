@@ -8,6 +8,7 @@ Self-loops are allowed but multiple edges are not (see MultiGraph).
 For directed graphs see DiGraph and MultiDiGraph.
 """
 from copy import deepcopy
+import numpy as np
 
 import networkx as nx
 from networkx.classes.coreviews import AdjacencyView
