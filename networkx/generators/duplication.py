@@ -13,7 +13,7 @@ __all__ = ["partial_duplication_graph", "duplication_divergence_graph"]
 
 
 @py_random_state(4)
-def partial_duplication_graph(N, n, p, q, seed=None):
+def partial_duplication_graph(N, n, p, q, seed=None, create_using=None):
     """Returns a random graph using the partial duplication model.
 
     Parameters
@@ -36,6 +36,10 @@ def partial_duplication_graph(N, n, p, q, seed=None):
     seed : integer, random_state, or None (default)
         Indicator of random number generation state.
         See :ref:`Randomness<randomness>`.
+
+    create_using : Graph, optional (default Graph())
+        If provided this graph is cleared of nodes and edges and filled
+        with the new graph. Usually used to set the type of the graph.
 
     Notes
     -----
@@ -66,7 +70,7 @@ def partial_duplication_graph(N, n, p, q, seed=None):
     if n > N:
         raise NetworkXError("partial duplication graph must have n <= N.")
 
-    G = nx.complete_graph(n)
+    G = nx.complete_graph(n, create_using)
     for new_node in range(n, N):
         # Pick a random vertex, u, already in the graph.
         src_node = seed.randint(0, new_node - 1)
@@ -87,7 +91,7 @@ def partial_duplication_graph(N, n, p, q, seed=None):
 
 
 @py_random_state(2)
-def duplication_divergence_graph(n, p, seed=None):
+def duplication_divergence_graph(n, p, seed=None, create_using=None):
     """Returns an undirected graph using the duplication-divergence model.
 
     A graph of `n` nodes is created by duplicating the initial nodes
@@ -103,6 +107,9 @@ def duplication_divergence_graph(n, p, seed=None):
     seed : integer, random_state, or None (default)
         Indicator of random number generation state.
         See :ref:`Randomness<randomness>`.
+    create_using : Graph, optional (default Graph())
+        If provided this graph is cleared of nodes and edges and filled
+        with the new graph. Usually used to set the type of the graph.
 
     Returns
     -------
@@ -135,7 +142,7 @@ def duplication_divergence_graph(n, p, seed=None):
         msg = "n must be greater than or equal to 2"
         raise nx.NetworkXError(msg)
 
-    G = nx.Graph()
+    G = (create_using or nx.Graph)()
 
     # Initialize the graph with two connected nodes.
     G.add_edge(0, 1)
