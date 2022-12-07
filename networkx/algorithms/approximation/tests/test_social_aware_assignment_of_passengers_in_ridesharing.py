@@ -45,22 +45,31 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
         Opt = []
         assert find_matching(G, l, Opt) == []
 
-    def test_1(self):
+    def test_mnm_1(self):
+        G, k = case_1()
+        assert match_and_merge(G, k) == [[1, 2], [3, 4, 5, 6]]
+
+    def test_fm_1(self):
         G, k = case_1()
         P = match_and_merge(G, k)
-        assert P == [[1, 2], [3, 4, 5, 6]]
         assert find_matching(G, k-1, P) == []
 
-    def test_2(self):
+    def test_mnm_2(self):
+        G, k = case_2()
+        assert match_and_merge(G, k) == [[1, 2, 3]]
+     
+    def test_fm_2(self):
         G, k = case_2()
         P = match_and_merge(G, k)
-        assert match_and_merge(G, k) == [[1, 2, 3]]
         assert find_matching(G, k-1, P) == [[1, 2], [2, 3], [3, 1]]
 
-    def test_3(self):
+    def test_mnm_3(self):
+        G, k = case_3()
+        assert match_and_merge(G, k) == [[1, 2, 3], [4, 5, 6], [7, 8]]
+    
+    def test_fm_3(self):
         G, k = case_3()
         P = match_and_merge(G, k)
-        assert P == [[1, 2, 3], [4, 5, 6], [7, 8]]
         assert find_matching(G, k, P) in [[1, 2, 3], [4, 5, 6]]
 
     def test_4(self):
@@ -75,4 +84,5 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
                 else:
                     with pytest.raises(nx.NetworkXError):
                         match_and_merge(G, k)
+
 

@@ -57,6 +57,15 @@ def find_matching(G_l: nx.Graph, l: int, Opt: list) -> list:
     :param l: Corresponding round index
     :param Opt: Optimal partition
     :return: A matching R_l in G_l
+
+    Example
+    >>> G = nx.Graph()
+    >>> list_of_edges = [(1, 2), (1, 3), (1, 5), (1, 6), (2, 4), (2, 7), (3, 4), (3, 5), (3, 6), (4, 5), (4, 6), (4, 7), (5, 8), (6, 7), (6, 8)]
+    >>> G.add_edges_from(list_of_edges)
+    >>> l = 3
+    >>> Opt = [[1, 2, 3], [4, 5, 6], [7, 8]]
+    >>> find_matching(G, l, P)
+    [1, 2, 3]
     """
     # Empty implementation
     return [1]
