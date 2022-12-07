@@ -12,12 +12,12 @@ Functions are based on the pseudocode from the article which are
 Written by Victor Kushnir. 
 """
 import networkx as nx
-from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import min_maximal_matching
 from networkx.utils import not_implemented_for
 
 __all__ = ["match_and_merge", "find_matching"]
 
-@not_implemented_for("undirected")
+@not_implemented_for("directed")
+@not_implemented_for("weighted")
 def match_and_merge(G: nx.Graph,k: int) -> list:
     """
     An approximation algorithm for any k ≥ 3, provides a solution for the social aware assignment problem with a ratio of 1/(k−1).
@@ -41,7 +41,8 @@ def match_and_merge(G: nx.Graph,k: int) -> list:
     # Empty implementation
     return []
 
-@not_implemented_for("undirected")
+@not_implemented_for("directed")
+@not_implemented_for("weighted")
 def find_matching(G_l: nx.Graph, l: int, Opt: list) -> list:
     """
     As described in the article under the section "Procedure 2: Find matching".
@@ -61,5 +62,3 @@ def find_matching(G_l: nx.Graph, l: int, Opt: list) -> list:
     """
     # Empty implementation
     return []
-
-    
