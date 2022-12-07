@@ -5,6 +5,7 @@ import math
 from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import match_and_merge, find_matching
 
 
+
 def case_1():
     G = nx.Graph()
     list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
@@ -29,7 +30,9 @@ def case_3():
     return G, k
 
 
-class test_social_aware_assignment_of_passengers_in_ridesharing:
+
+
+class Test_social_aware_assignment_of_passengers_in_ridesharing:
 
     def test_mnm_empty_graph(self):
         G = nx.Graph()
@@ -72,7 +75,4 @@ class test_social_aware_assignment_of_passengers_in_ridesharing:
                 else:
                     with pytest.raises(nx.NetworkXError):
                         match_and_merge(G, k)
-
-
-
 

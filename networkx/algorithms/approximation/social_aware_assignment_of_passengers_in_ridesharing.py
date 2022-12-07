@@ -17,7 +17,6 @@ from networkx.utils import not_implemented_for
 __all__ = ["match_and_merge", "find_matching"]
 
 @not_implemented_for("directed")
-@not_implemented_for("weighted")
 def match_and_merge(G: nx.Graph,k: int) -> list:
     """
     An approximation algorithm for any k ≥ 3, provides a solution for the social aware assignment problem with a ratio of 1/(k−1).
@@ -39,10 +38,9 @@ def match_and_merge(G: nx.Graph,k: int) -> list:
     [[1, 2], [3, 4, 5, 6]]
     """
     # Empty implementation
-    return []
+    return [1]
 
 @not_implemented_for("directed")
-@not_implemented_for("weighted")
 def find_matching(G_l: nx.Graph, l: int, Opt: list) -> list:
     """
     As described in the article under the section "Procedure 2: Find matching".
@@ -61,4 +59,6 @@ def find_matching(G_l: nx.Graph, l: int, Opt: list) -> list:
     :return: A matching R_l in G_l
     """
     # Empty implementation
-    return []
+    return [1]
+
+
