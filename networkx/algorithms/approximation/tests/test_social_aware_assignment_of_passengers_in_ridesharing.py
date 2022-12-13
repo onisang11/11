@@ -5,7 +5,6 @@ import math
 from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import match_and_merge, find_matching
 
 
-
 def case_1():
     G = nx.Graph()
     list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
@@ -28,8 +27,6 @@ def case_3():
     G.add_edges_from(list_of_edges)
     k = 3
     return G, k
-
-
 
 
 class Test_social_aware_assignment_of_passengers_in_ridesharing:
@@ -57,7 +54,7 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
     def test_mnm_2(self):
         G, k = case_2()
         assert match_and_merge(G, k) == [[1, 2, 3]]
-     
+
     def test_fm_2(self):
         G, k = case_2()
         P = match_and_merge(G, k)
@@ -66,7 +63,7 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
     def test_mnm_3(self):
         G, k = case_3()
         assert match_and_merge(G, k) == [[1, 2, 3], [4, 5, 6], [7, 8]]
-    
+
     def test_fm_3(self):
         G, k = case_3()
         P = match_and_merge(G, k)
@@ -77,10 +74,11 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
         for n in range(5, 15):
             G = nx.complete_graph(n)
             for k in range(5, 15):
-                if k<=n:
+                if k <= n:
                     P = match_and_merge(G, k)
-                    assert len(P) == math.ceil(math.log(n, k))
-                    assert find_matching(G, k-1, P) in itertools.combinations(G.nodes(), k-1)
+                    assert len(P) == math.ceil(n/k)
+                    assert find_matching(
+                        G, k-1, P) in itertools.combinations(G.nodes(), k-1)
                 else:
                     with pytest.raises(nx.NetworkXError):
                         match_and_merge(G, k)
