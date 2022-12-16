@@ -36,38 +36,17 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
         k = 5
         assert match_and_merge(G, k) == []
 
-    def test_fm_empty_graph(self):
-        G = nx.Graph()
-        l = 5
-        Opt = []
-        assert find_matching(G, l, Opt) == []
-
     def test_mnm_1(self):
         G, k = case_1()
         assert match_and_merge(G, k) == [[1, 2], [3, 4, 5, 6]]
-
-    def test_fm_1(self):
-        G, k = case_1()
-        P = match_and_merge(G, k)
-        assert find_matching(G, k-1, P) == []
 
     def test_mnm_2(self):
         G, k = case_2()
         assert match_and_merge(G, k) == [[1, 2, 3]]
 
-    def test_fm_2(self):
-        G, k = case_2()
-        P = match_and_merge(G, k)
-        assert find_matching(G, k-1, P) == [[1, 2], [2, 3], [3, 1]]
-
     def test_mnm_3(self):
         G, k = case_3()
         assert match_and_merge(G, k) == [[1, 2, 3], [4, 5, 6], [7, 8]]
-
-    def test_fm_3(self):
-        G, k = case_3()
-        P = match_and_merge(G, k)
-        assert find_matching(G, k, P) in [[1, 2, 3], [4, 5, 6]]
 
     def test_4(self):
         # For each n between 5 and 15 (inclusive), generate a clique graph with n nodes and check for 5<k≤15
@@ -77,10 +56,13 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
                 if k <= n:
                     P = match_and_merge(G, k)
                     assert len(P) == math.ceil(n/k)
-                    assert find_matching(
-                        G, k-1, P) in itertools.combinations(G.nodes(), k-1)
                 else:
                     with pytest.raises(nx.NetworkXError):
                         match_and_merge(G, k)
+
+
+
+
+
 
 
