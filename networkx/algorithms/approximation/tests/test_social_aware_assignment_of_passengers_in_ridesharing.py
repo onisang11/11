@@ -1,8 +1,7 @@
 import pytest
 import networkx as nx
-import itertools
 import math
-from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import match_and_merge, find_matching
+from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import match_and_merge
 
 
 def case_1():
@@ -27,6 +26,10 @@ def case_3():
     G.add_edges_from(list_of_edges)
     k = 3
     return G, k
+
+
+
+
 
 
 class Test_social_aware_assignment_of_passengers_in_ridesharing:
@@ -59,9 +62,6 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
                 else:
                     with pytest.raises(nx.NetworkXError):
                         match_and_merge(G, k)
-
-
-
 
 
 
