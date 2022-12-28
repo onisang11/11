@@ -20,7 +20,7 @@ __all__ = ["match_and_merge"]
 
 # Set the logger
 LOG_FORMAT = "%(levelname)s, time: %(asctime)s ,line: %(lineno)d, %(message)s"
-logging.basicConfig(filename="match_and_merge.log", level=logging.DEBUG,format=LOG_FORMAT)
+logging.basicConfig(filename="social_aware_assignment_of_passengers_in_ridesharing.log", level=logging.DEBUG,format=LOG_FORMAT)
 logger = logging.getLogger()
 
 @not_implemented_for("directed")

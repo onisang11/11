@@ -14,7 +14,6 @@ def case_5():
     G.add_edges_from(list_of_edges)
     k = 3
     return G, k
-
 class Test_social_aware_assignment_of_passengers_in_ridesharing:
     def test_1(self):
         G = nx.Graph()
@@ -51,8 +50,7 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
             for k in range(5, 15):
                 if k <= n:
                     P = match_and_merge(G, k)
-                    assert [len([p for p in P if n in p])
-                            == 1 for n in G.nodes()]
+                    assert [len([p for p in P if n in p])== 1 for n in G.nodes()]
     def test_8(self):
         # Check that the number of partitions is at most ceil(n/2)
         for n in range(5, 15):
