@@ -54,10 +54,8 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
     logger.debug("Checking for k correctness")
     # Check if k is correct
     if G.number_of_nodes() < k:
-        logger.error(
-            f"Failed a check G.number_of_nodes() ({G.number_of_nodes()}) < k ({k}), should now raise an error")
-        raise nx.NetworkXError(
-            "k cannot be greater than the number of nodes in the graph G")
+        logger.error(f"Failed a check G.number_of_nodes() ({G.number_of_nodes()}) < k ({k}), should now raise an error")
+        raise nx.NetworkXError("k cannot be greater than the number of nodes in the graph G")
     # If k is negative, raise an error
     elif k < 0:
         logger.error(f"Checked for k ({k}) < 0, should now raise an error")
@@ -177,3 +175,5 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
     # Return P
     logger.debug(f"Returning P={P}")
     return P
+
+    
