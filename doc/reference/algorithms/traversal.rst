@@ -59,3 +59,4 @@ Breadth First Search on Edges
    :toctree: generated/
 
    edge_bfs
+   generic_edge_bfs
