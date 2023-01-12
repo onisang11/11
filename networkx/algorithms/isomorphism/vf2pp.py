@@ -66,11 +66,13 @@ _GraphParameters = collections.namedtuple(
     [
         "G1",
         "G2",
+        "G1_degree",
+        "G2_degree",
         "G1_labels",
         "G2_labels",
-        "nodes_of_G1Labels",
-        "nodes_of_G2Labels",
-        "G2_nodes_of_degree",
+        "G1_by_label",
+        "G2_by_label",
+        "G2_by_degree",
     ],
 )
 
@@ -96,23 +98,23 @@ def vf2pp_isomorphism(G1, G2, node_label=None, default_label=None):
 
     Parameters
     ----------
-    G1, G2 : NetworkX Graph or MultiGraph instances.
+    G1, G2 : NetworkX graph
         The two graphs to check for isomorphism.
 
-    node_label : str, optional
+    node_label : str (default=None)
         The name of the node attribute to be used when comparing nodes.
         The default is `None`, meaning node attributes are not considered
         in the comparison. Any node that doesn't have the `node_label`
-        attribute uses `default_label` instead.
+        attribute is asssigned the label given by `default_label` instead.
 
-    default_label : scalar
-        Default value to use when a node doesn't have an attribute
-        named `node_label`. Default is `None`.
+    default_label : scalar (default=None)
+        Default label value used when no node attribute is found for a node.
 
     Returns
     -------
     dict or None
-        Node mapping if the two graphs are isomorphic. None otherwise.
+        Isomorphism between the nodes in `G1` and `G2`.
+        `None` if the two graphs are not isomorphic.
     """
     try:
         mapping = next(vf2pp_all_isomorphisms(G1, G2, node_label, default_label))
@@ -126,23 +128,22 @@ def vf2pp_is_isomorphic(G1, G2, node_label=None, default_label=None):
 
     Parameters
     ----------
-    G1, G2 : NetworkX Graph or MultiGraph instances.
+    G1, G2 : NetworkX graph
         The two graphs to check for isomorphism.
 
-    node_label : str, optional
+    node_label : str (default=None)
         The name of the node attribute to be used when comparing nodes.
         The default is `None`, meaning node attributes are not considered
         in the comparison. Any node that doesn't have the `node_label`
-        attribute uses `default_label` instead.
+        attribute is asssigned the label given by `default_label` instead.
 
-    default_label : scalar
-        Default value to use when a node doesn't have an attribute
-        named `node_label`. Default is `None`.
+    default_label : scalar (default=None)
+        Default label value used when no node attribute is found for a node.
 
     Returns
     -------
     bool
-        True if the two graphs are isomorphic, False otherwise.
+        True if the two graphs are isomorphic. False otherwise.
     """
     if vf2pp_isomorphism(G1, G2, node_label, default_label) is not None:
         return True
@@ -154,77 +155,61 @@ def vf2pp_all_isomorphisms(G1, G2, node_label=None, default_label=None):
 
     Parameters
     ----------
-    G1, G2 : NetworkX Graph or MultiGraph instances.
+    G1, G2 : NetworkX graph
         The two graphs to check for isomorphism.
 
-    node_label : str, optional
+    node_label : str (default=None)
         The name of the node attribute to be used when comparing nodes.
         The default is `None`, meaning node attributes are not considered
         in the comparison. Any node that doesn't have the `node_label`
-        attribute uses `default_label` instead.
+        attribute is asssigned the label given by `default_label` instead.
 
-    default_label : scalar
-        Default value to use when a node doesn't have an attribute
-        named `node_label`. Default is `None`.
+    default_label : scalar (default=None)
+        Default label value used when no node attribute is found for a node.
 
     Yields
     ------
     dict
-        Isomorphic mapping between the nodes in `G1` and `G2`.
+        Isomorphism between the nodes in `G1` and `G2`.
     """
-    if G1.number_of_nodes() == 0 or G2.number_of_nodes() == 0:
-        return False
+    N1, N2 = len(G1), len(G2)
+    if N1 != N2:
+        return "G1 and G2 have different number of nodes, so no isomorphism"
+    if N1 == 0:
+        return "G1 and G2 have no nodes, so no isomorphism"
 
-    # Create the degree dicts based on graph type
-    if G1.is_directed():
-        G1_degree = {
-            n: (in_degree, out_degree)
-            for (n, in_degree), (_, out_degree) in zip(G1.in_degree, G1.out_degree)
-        }
-        G2_degree = {
-            n: (in_degree, out_degree)
-            for (n, in_degree), (_, out_degree) in zip(G2.in_degree, G2.out_degree)
-        }
-    else:
-        G1_degree = dict(G1.degree)
-        G2_degree = dict(G2.degree)
+    # Initialize parameters and cache information about degree and labels
+    gparams, sparams = _initialize_parameters(G1, G2, node_label, default_label)
 
-    if not G1.is_directed():
-        find_candidates = _find_candidates
-        restore_Tinout = _restore_Tinout
-    else:
-        find_candidates = _find_candidates_Di
-        restore_Tinout = _restore_Tinout_Di
+    # Check that degree sequences match
+    if sorted(gparams.G1_degree.values()) != sorted(gparams.G2_degree.values()):
+        return "G1 and G2 have different degree sequences, so no isomorphism"
 
-    # Check that both graphs have the same number of nodes and degree sequence
-    if G1.order() != G2.order():
-        return False
-    if sorted(G1_degree.values()) != sorted(G2_degree.values()):
-        return False
-
-    # Initialize parameters and cache necessary information about degree and labels
-    graph_params, state_params = _initialize_parameters(
-        G1, G2, G2_degree, node_label, default_label
-    )
-
-    # Check if G1 and G2 have the same labels, and that number of nodes per label is equal between the two graphs
-    if not _precheck_label_properties(graph_params):
-        return False
+    # Check if G1 and G2 have the same number of nodes per label
+    for label, nodes in gparams.G2_by_label.items():
+        if label not in gparams.G1_by_label:
+            return f"Label {label} in G2 is not in G1, so no isomorphism"
+        if len(gparams.G1_by_label[label]) != len(nodes):
+            return f"Number of nodes labeled {label} differs, so no isomorphism"
 
     # Calculate the optimal node ordering
-    node_order = _matching_order(graph_params)
+    node_order = _matching_order(gparams)
+
+    # set convenience names
+    if G1.is_directed():
+        find_candidates = _find_candidates_Di
+        restore_Tinout = _restore_Tinout_Di
+    else:
+        find_candidates = _find_candidates
+        restore_Tinout = _restore_Tinout
+    mapping = sparams.mapping
+    reverse_mapping = sparams.reverse_mapping
 
     # Initialize the stack
-    stack = []
-    candidates = iter(
-        find_candidates(node_order[0], graph_params, state_params, G1_degree)
-    )
-    stack.append((node_order[0], candidates))
-
-    mapping = state_params.mapping
-    reverse_mapping = state_params.reverse_mapping
-
-    # Index of the node from the order, currently being examined
+    current_node = node_order[0]
+    candidates = iter(find_candidates(current_node, gparams, sparams))
+    stack = [(current_node, candidates)]
+    # Index of the next node from the order, currently being examined
     matching_node = 1
 
     while stack:
@@ -242,10 +227,10 @@ def vf2pp_all_isomorphisms(G1, G2, node_label=None, default_label=None):
                 popped_node2 = mapping[popped_node1]
                 mapping.pop(popped_node1)
                 reverse_mapping.pop(popped_node2)
-                restore_Tinout(popped_node1, popped_node2, graph_params, state_params)
+                restore_Tinout(popped_node1, popped_node2, gparams, sparams)
             continue
 
-        if _feasibility(current_node, candidate, graph_params, state_params):
+        if _feasibility(current_node, candidate, gparams, sparams):
             # Terminate if mapping is extended to its full
             if len(mapping) == G2.number_of_nodes() - 1:
                 cp_mapping = mapping.copy()
@@ -256,45 +241,39 @@ def vf2pp_all_isomorphisms(G1, G2, node_label=None, default_label=None):
             # Feasibility rules pass, so extend the mapping and update the parameters
             mapping[current_node] = candidate
             reverse_mapping[candidate] = current_node
-            _update_Tinout(current_node, candidate, graph_params, state_params)
+            _update_Tinout(current_node, candidate, gparams, sparams)
             # Append the next node and its candidates to the stack
-            candidates = iter(
-                find_candidates(
-                    node_order[matching_node], graph_params, state_params, G1_degree
-                )
-            )
-            stack.append((node_order[matching_node], candidates))
+            current_node = node_order[matching_node]
+            cands = iter(find_candidates(current_node, gparams, sparams))
+            stack.append((current_node, cands))
             matching_node += 1
 
 
-def _precheck_label_properties(graph_params):
-    G1, G2, G1_labels, G2_labels, nodes_of_G1Labels, nodes_of_G2Labels, _ = graph_params
-    if any(
-        label not in nodes_of_G1Labels or len(nodes_of_G1Labels[label]) != len(nodes)
-        for label, nodes in nodes_of_G2Labels.items()
-    ):
-        return False
-    return True
-
-
-def _initialize_parameters(G1, G2, G2_degree, node_label=None, default_label=-1):
+# TODO: correct and unify the namedtuple descriptions in the doc_strings
+def _initialize_parameters(G1, G2, node_label=None, default_label=-1):
     """Initializes all the necessary parameters for VF2++
 
     Parameters
     ----------
-    G1,G2: NetworkX Graph or MultiGraph instances.
+    G1, G2 : NetworkX graph
         The two graphs to check for isomorphism or monomorphism
 
-    G1_labels,G2_labels: dict
-        The label of every node in G1 and G2 respectively
+    node_label : str (default=None)
+        The name of the node attribute to be used when comparing nodes.
+        The default is `None`, meaning node attributes are not considered
+        in the comparison. Any node that doesn't have the `node_label`
+        attribute is asssigned the label given by `default_label` instead.
+
+    default_label : scalar (default=None)
+        Default label value used when no node attribute is found for a node.
 
     Returns
     -------
     graph_params: namedtuple
         Contains all the Graph-related parameters:
 
-        G1,G2
-        G1_labels,G2_labels: dict
+        G1, G2 : graphs
+        G1_labels, G2_labels : dict
 
     state_params: namedtuple
         Contains all the State-related parameters:
@@ -309,45 +288,51 @@ def _initialize_parameters(G1, G2, G2_degree, node_label=None, default_label=-1)
             Ti contains uncovered neighbors of covered nodes from Gi, i.e. nodes that are not in the mapping, but are
             neighbors of nodes that are.
 
-        T1_out, T2_out: set
-            Ti_out contains all the nodes from Gi, that are neither in the mapping nor in Ti
+        T1_tilde, T2_tilde: set
+            Ti_tilde contains all the nodes from Gi, that are neither in the mapping nor in Ti
+            The map as extended so far. Maps nodes of G1 to nodes of G2
+
     """
     G1_labels = dict(G1.nodes(data=node_label, default=default_label))
     G2_labels = dict(G2.nodes(data=node_label, default=default_label))
 
+    # Create the degree dicts based on graph type
+    if G1.is_directed():
+        G1_degree = {
+            n: (in_degree, out_degree)
+            for (n, in_degree), (_, out_degree) in zip(G1.in_degree, G1.out_degree)
+        }
+        G2_degree = {
+            n: (in_degree, out_degree)
+            for (n, in_degree), (_, out_degree) in zip(G2.in_degree, G2.out_degree)
+        }
+    else:
+        G1_degree = dict(G1.degree)
+        G2_degree = dict(G2.degree)
+
     graph_params = _GraphParameters(
         G1,
         G2,
+        G1_degree,
+        G2_degree,
         G1_labels,
         G2_labels,
-        nx.utils.groups(G1_labels),
-        nx.utils.groups(G2_labels),
-        nx.utils.groups(G2_degree),
+        nx.utils.groups(G1_labels),  # G1_by_label,
+        nx.utils.groups(G2_labels),  # G2_by_label,
+        nx.utils.groups(G2_degree),  # G2_by_degree,
     )
 
-    T1, T1_in = set(), set()
-    T2, T2_in = set(), set()
-    if G1.is_directed():
-        T1_tilde, T1_tilde_in = (
-            set(G1.nodes()),
-            set(),
-        )  # todo: do we need Ti_tilde_in? What nodes does it have?
-        T2_tilde, T2_tilde_in = set(G2.nodes()), set()
-    else:
-        T1_tilde, T1_tilde_in = set(G1.nodes()), set()
-        T2_tilde, T2_tilde_in = set(G2.nodes()), set()
-
     state_params = _StateParameters(
-        dict(),
-        dict(),
-        T1,
-        T1_in,
-        T1_tilde,
-        T1_tilde_in,
-        T2,
-        T2_in,
-        T2_tilde,
-        T2_tilde_in,
+        {},  # mapping
+        {},  # reverse_mapping
+        set(),  # T1,
+        set(),  # T1_in,
+        set(G1),  # T1_tilde,
+        set(),  # T1_tilde_in,
+        set(),  # T2,
+        set(),  # T2_in,
+        set(G2),  # T2_tilde,
+        set(),  # T2_tilde_in,
     )
 
     return graph_params, state_params
@@ -379,14 +364,14 @@ def _matching_order(graph_params):
     node_order: list
         The ordering of the nodes.
     """
-    G1, G2, G1_labels, _, _, nodes_of_G2Labels, _ = graph_params
+    G1, G2, G1_degree, _, G1_labels, _, _, nodes_of_G2Labels, _ = graph_params
     if not G1 and not G2:
         return {}
 
     if G1.is_directed():
         G1 = G1.to_undirected(as_view=True)
 
-    V1_unordered = set(G1.nodes())
+    V1_unordered = set(G1)
     label_rarity = {label: len(nodes) for label, nodes in nodes_of_G2Labels.items()}
     used_degrees = {node: 0 for node in G1}
     node_order = []
@@ -405,9 +390,9 @@ def _matching_order(graph_params):
                 max_used_degree_nodes = [
                     n for n in nodes_to_add if used_degrees[n] == max_used_degree
                 ]
-                max_degree = max(G1.degree[n] for n in max_used_degree_nodes)
+                max_degree = max(G1_degree[n] for n in max_used_degree_nodes)
                 max_degree_nodes = [
-                    n for n in max_used_degree_nodes if G1.degree[n] == max_degree
+                    n for n in max_used_degree_nodes if G1_degree[n] == max_degree
                 ]
                 next_node = min(
                     max_degree_nodes, key=lambda x: label_rarity[G1_labels[x]]
@@ -424,9 +409,7 @@ def _matching_order(graph_params):
     return node_order
 
 
-def _find_candidates(
-    u, graph_params, state_params, G1_degree
-):  # todo: make the 4th argument the degree of u
+def _find_candidates(u, graph_params, state_params):
     """Given node u of G1, finds the candidates of u from G2.
 
     Parameters
@@ -464,13 +447,13 @@ def _find_candidates(
     candidates: set
         The nodes from G2 which are candidates for u.
     """
-    G1, G2, G1_labels, _, _, nodes_of_G2Labels, G2_nodes_of_degree = graph_params
+    G1, G2, G1_degree, _, G1_labels, _, _, G2_by_label, G2_by_degree = graph_params
     mapping, reverse_mapping, _, _, _, _, _, _, T2_tilde, _ = state_params
 
     covered_neighbors = [nbr for nbr in G1[u] if nbr in mapping]
     if not covered_neighbors:
-        candidates = set(nodes_of_G2Labels[G1_labels[u]])
-        candidates.intersection_update(G2_nodes_of_degree[G1_degree[u]])
+        candidates = set(G2_by_label[G1_labels[u]])
+        candidates.intersection_update(G2_by_degree[G1_degree[u]])
         candidates.intersection_update(T2_tilde)
         candidates.difference_update(reverse_mapping)
         if G1.is_multigraph():
@@ -490,8 +473,8 @@ def _find_candidates(
         common_nodes.intersection_update(G2[mapping[nbr1]])
 
     common_nodes.difference_update(reverse_mapping)
-    common_nodes.intersection_update(G2_nodes_of_degree[G1_degree[u]])
-    common_nodes.intersection_update(nodes_of_G2Labels[G1_labels[u]])
+    common_nodes.intersection_update(G2_by_degree[G1_degree[u]])
+    common_nodes.intersection_update(G2_by_label[G1_labels[u]])
     if G1.is_multigraph():
         common_nodes.difference_update(
             {
@@ -503,16 +486,16 @@ def _find_candidates(
     return common_nodes
 
 
-def _find_candidates_Di(u, graph_params, state_params, G1_degree):
-    G1, G2, G1_labels, _, _, nodes_of_G2Labels, G2_nodes_of_degree = graph_params
+def _find_candidates_Di(u, graph_params, state_params):
+    G1, G2, G1_degree, _, G1_labels, _, _, G2_by_label, G2_by_degree = graph_params
     mapping, reverse_mapping, _, _, _, _, _, _, T2_tilde, _ = state_params
 
     covered_successors = [succ for succ in G1[u] if succ in mapping]
     covered_predecessors = [pred for pred in G1.pred[u] if pred in mapping]
 
     if not (covered_successors or covered_predecessors):
-        candidates = set(nodes_of_G2Labels[G1_labels[u]])
-        candidates.intersection_update(G2_nodes_of_degree[G1_degree[u]])
+        candidates = set(G2_by_label[G1_labels[u]])
+        candidates.intersection_update(G2_by_degree[G1_degree[u]])
         candidates.intersection_update(T2_tilde)
         candidates.difference_update(reverse_mapping)
         if G1.is_multigraph():
@@ -539,8 +522,8 @@ def _find_candidates_Di(u, graph_params, state_params, G1_degree):
         common_nodes.intersection_update(G2[mapping[pred1]])
 
     common_nodes.difference_update(reverse_mapping)
-    common_nodes.intersection_update(G2_nodes_of_degree[G1_degree[u]])
-    common_nodes.intersection_update(nodes_of_G2Labels[G1_labels[u]])
+    common_nodes.intersection_update(G2_by_degree[G1_degree[u]])
+    common_nodes.intersection_update(G2_by_label[G1_labels[u]])
     if G1.is_multigraph():
         common_nodes.difference_update(
             {
@@ -553,12 +536,14 @@ def _find_candidates_Di(u, graph_params, state_params, G1_degree):
 
 
 def _feasibility(node1, node2, graph_params, state_params):
-    """Given a candidate pair of nodes u and v from G1 and G2 respectively, checks if it's feasible to extend the
-    mapping, i.e. if u and v can be matched.
+    """Check if a candidate pair of nodes can be matched
+
+    node1 and node2 must be from G1 and G2 respectively.
+    checks if it's feasible to extend the mapping using node1 -> node2.
 
     Notes
     -----
-    This function performs all the necessary checking by applying both consistency and cutting rules.
+    This function applies both consistency and cutting rules.
 
     Parameters
     ----------
@@ -594,12 +579,10 @@ def _feasibility(node1, node2, graph_params, state_params):
     -------
     True if all checks are successful, False otherwise.
     """
-    G1 = graph_params.G1
-
     if _cut_PT(node1, node2, graph_params, state_params):
         return False
 
-    if G1.is_multigraph():
+    if graph_params.G1.is_multigraph():
         if not _consistent_PT(node1, node2, graph_params, state_params):
             return False
 
@@ -643,7 +626,7 @@ def _cut_PT(u, v, graph_params, state_params):
     -------
     True if we should prune this branch, i.e. the node pair failed the cutting checks. False otherwise.
     """
-    G1, G2, G1_labels, G2_labels, _, _, _ = graph_params
+    G1, G2, _, _, G1_labels, G2_labels, _, _, _ = graph_params
     (
         _,
         _,
@@ -657,7 +640,6 @@ def _cut_PT(u, v, graph_params, state_params):
         _,
     ) = state_params
 
-    u_labels_predecessors, v_labels_predecessors = {}, {}
     if G1.is_directed():
         u_labels_predecessors = nx.utils.groups(
             {n1: G1_labels[n1] for n1 in G1.pred[u]}
@@ -783,16 +765,16 @@ def _consistent_PT(u, v, graph_params, state_params):
 
     for predecessor in G1.pred[u]:
         if predecessor in mapping:
-            if G1.number_of_edges(predecessor, u) != G2.number_of_edges(
-                mapping[predecessor], v
+            if G1.number_of_edges(u, predecessor) != G2.number_of_edges(
+                v, mapping[predecessor]
             ):
                 return False
 
     for predecessor in G2.pred[v]:
         if predecessor in reverse_mapping:
             if G1.number_of_edges(
-                reverse_mapping[predecessor], u
-            ) != G2.number_of_edges(predecessor, v):
+                u, reverse_mapping[predecessor]
+            ) != G2.number_of_edges(v, predecessor):
                 return False
 
     return True
@@ -838,7 +820,7 @@ def _update_Tinout(new_node1, new_node2, graph_params, state_params):
         T1_tilde, T2_tilde: set
             Ti_out contains all the nodes from Gi, that are neither in the mapping nor in Ti
     """
-    G1, G2, _, _, _, _, _ = graph_params
+    G1, G2 = graph_params.G1, graph_params.G2
     (
         mapping,
         reverse_mapping,
@@ -922,8 +904,7 @@ def _restore_Tinout(popped_node1, popped_node2, graph_params, state_params):
         T1_tilde, T2_tilde: set
             Ti_out contains all the nodes from Gi, that are neither in the mapping nor in Ti
     """
-    # If the node we want to remove from the mapping, has at least one covered neighbor, add it to T1.
-    G1, G2, _, _, _, _, _ = graph_params
+    G1, G2 = graph_params.G1, graph_params.G2
     (
         mapping,
         reverse_mapping,
@@ -940,17 +921,17 @@ def _restore_Tinout(popped_node1, popped_node2, graph_params, state_params):
     is_added = False
     for neighbor in G1[popped_node1]:
         if neighbor in mapping:
-            # if a neighbor of the excluded node1 is in the mapping, keep node1 in T1
+            # if a neighbor of popped_node1 is in the mapping, keep popped_node1 in T1
             is_added = True
             T1.add(popped_node1)
         else:
-            # check if its neighbor has another connection with a covered node. If not, only then exclude it from T1
+            # check if neighbor connects with a covered node. If not, exclude it from T1
             if any(nbr in mapping for nbr in G1[neighbor]):
                 continue
             T1.discard(neighbor)
             T1_tilde.add(neighbor)
 
-    # Case where the node is not present in neither the mapping nor T1. By definition, it should belong to T1_tilde
+    # If popped_node1 not present in the mapping nor T1, put into T1_tilde
     if not is_added:
         T1_tilde.add(popped_node1)
 
@@ -969,9 +950,9 @@ def _restore_Tinout(popped_node1, popped_node2, graph_params, state_params):
         T2_tilde.add(popped_node2)
 
 
+# TODO:  reuse the dup loops in restore_Tinout. Maybe handle DiGraph and Graph too.
 def _restore_Tinout_Di(popped_node1, popped_node2, graph_params, state_params):
-    # If the node we want to remove from the mapping, has at least one covered neighbor, add it to T1.
-    G1, G2, _, _, _, _, _ = graph_params
+    G1, G2 = graph_params.G1, graph_params.G2
     (
         mapping,
         reverse_mapping,
@@ -988,28 +969,27 @@ def _restore_Tinout_Di(popped_node1, popped_node2, graph_params, state_params):
     is_added = False
     for successor in G1[popped_node1]:
         if successor in mapping:
-            # if a neighbor of the excluded node1 is in the mapping, keep node1 in T1
+            # if a neighbor of popped_node1 is in the mapping, keep popped_node1 in T1
             is_added = True
             T1_in.add(popped_node1)
         else:
-            # check if its neighbor has another connection with a covered node. If not, only then exclude it from T1
+            # check if neighbor connects with a covered node. If not, exclude it from T1
             if not any(pred in mapping for pred in G1.pred[successor]):
                 T1.discard(successor)
 
             if not any(succ in mapping for succ in G1[successor]):
                 T1_in.discard(successor)
 
-            if successor not in T1:
-                if successor not in T1_in:
-                    T1_tilde.add(successor)
+            if not (successor in T1 or successor in T1_in):
+                T1_tilde.add(successor)
 
     for predecessor in G1.pred[popped_node1]:
         if predecessor in mapping:
-            # if a neighbor of the excluded node1 is in the mapping, keep node1 in T1
+            # if a neighbor of popped_node1 is in the mapping, keep popped_node1 in T1
             is_added = True
             T1.add(popped_node1)
         else:
-            # check if its neighbor has another connection with a covered node. If not, only then exclude it from T1
+            # check if neighbor connects with a covered node. If not, exclude it from T1
             if not any(pred in mapping for pred in G1.pred[predecessor]):
                 T1.discard(predecessor)
 
@@ -1019,7 +999,7 @@ def _restore_Tinout_Di(popped_node1, popped_node2, graph_params, state_params):
             if not (predecessor in T1 or predecessor in T1_in):
                 T1_tilde.add(predecessor)
 
-    # Case where the node is not present in neither the mapping nor T1. By definition it should belong to T1_tilde
+    # If popped_node1 not present in the mapping nor T1, put into T1_tilde
     if not is_added:
         T1_tilde.add(popped_node1)
 
@@ -1035,17 +1015,14 @@ def _restore_Tinout_Di(popped_node1, popped_node2, graph_params, state_params):
             if not any(succ in reverse_mapping for succ in G2[successor]):
                 T2_in.discard(successor)
 
-            if successor not in T2:
-                if successor not in T2_in:
-                    T2_tilde.add(successor)
+            if not (successor in T2 or successor in T2_in):
+                T2_tilde.add(successor)
 
     for predecessor in G2.pred[popped_node2]:
         if predecessor in reverse_mapping:
-            # if a neighbor of the excluded node1 is in the mapping, keep node1 in T1
             is_added = True
             T2.add(popped_node2)
         else:
-            # check if its neighbor has another connection with a covered node. If not, only then exclude it from T1
             if not any(pred in reverse_mapping for pred in G2.pred[predecessor]):
                 T2.discard(predecessor)
 
