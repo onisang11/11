@@ -14,6 +14,7 @@ which is written by Victor Kushnir.
 """
 import networkx as nx
 from networkx.utils import not_implemented_for
+from typing import Dict, List
 import logging
 
 __all__ = ["match_and_merge"]
@@ -76,10 +77,10 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
         logger.debug("Should now run the algorithm")
         logger.debug("Initialization of the variables")
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
-        G = {1: G}
+        G: Dict[int, nx.Graph] = {1: G}
         logger.debug(f"Initialized G={G}")
         # Should contain the maximal matching of G_l
-        M = {}
+        M: Dict[int, List]= {}
         logger.debug(f"Initialized M={M}")
         # Loop to find the lth maximal matching and put it in G_(l+1)
         logger.debug(
@@ -87,7 +88,7 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
         for l in range(1, k):
             logger.debug(f"Looping on l={l}")
             # Initialization of the unified nodes list
-            unified_nodes = []
+            unified_nodes: List = []
             logger.debug(f"Initialized unified_nodes={unified_nodes}")
             # Find the maximal matching of G_l
             M[l] = list(nx.maximal_matching(G[l]))
@@ -175,5 +176,3 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
     # Return P
     logger.debug(f"Returning P={P}")
     return P
-
-    
