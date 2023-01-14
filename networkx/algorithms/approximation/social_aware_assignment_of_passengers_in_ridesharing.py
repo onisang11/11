@@ -11,16 +11,16 @@ Paper ID: 1862
 Implementation of match_and_merge
 algorithm is based on the pseudocode from the article
 which is written by Victor Kushnir.
+
+Also, an online web page was built for running the algorithm:
+http://157.230.22.122:5001/
 """
-import logging
 from typing import Dict, List
 
 import networkx as nx
 from networkx.utils import not_implemented_for
 
 __all__ = ["match_and_merge"]
-
-
 
 
 @not_implemented_for("directed")
