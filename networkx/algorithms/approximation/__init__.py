@@ -22,4 +22,4 @@ from networkx.algorithms.approximation.traveling_salesman import *
 from networkx.algorithms.approximation.treewidth import *
 from networkx.algorithms.approximation.vertex_cover import *
 from networkx.algorithms.approximation.maxcut import *
-from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import match_and_merge
+from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import *

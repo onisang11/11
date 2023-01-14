@@ -12,8 +12,8 @@ Implementation of match_and_merge
 algorithm is based on the pseudocode from the article
 which is written by Victor Kushnir.
 """
-from typing import Dict, List
 import logging
+from typing import Dict, List
 import networkx as nx
 from networkx.utils import not_implemented_for
 
@@ -24,7 +24,7 @@ LOG_FORMAT = "%(levelname)s, time: %(asctime)s ,line: %(lineno)d, %(message)s"
 logging.basicConfig(
     filename="social_aware_assignment_of_passengers_in_ridesharing.log",
     level=logging.DEBUG,
-    format=LOG_FORMAT
+    format=LOG_FORMAT,
 )
 logger = logging.getLogger()
 
@@ -73,17 +73,20 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     # If k is 0, return an empty list
     elif k == 0:
         logger.debug(
-            f"Checked for k ({k}) == 0, should now return an empty list")
+            f"Checked for k ({k}) == 0, should now return an empty list"
+            )
         return []
     # If k is 1, return a partition of the Graph, where each node is a list
     elif k == 1:
         logger.debug(
-            f"Checked for k ({k}) == 1, should now return a partition of the Graph where each node is a list")
+            f"Checked for k ({k}) == 1, should now return a partition of the Graph where each node is a list"
+            )
         return [[node] for node in Graph.nodes()]
     # If k is 2, run the maximum matching algorithm on the Graph and return the result
     elif k == 2:
         logger.debug(
-            f"Checked for k ({k}) == 2, should now run the maximum matching algorithm on the Graph and return the result")
+            f"Checked for k ({k}) == 2, should now run the maximum matching algorithm on the Graph and return the result"
+            )
         return [list(partition) for partition in nx.maximal_matching(Graph)]
     else:
         logger.debug("Should now run the algorithm")
@@ -96,7 +99,8 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         logger.debug(f"Initialized M={M}")
         # Loop to find the lth maximal matching and put it in G_(l+1)
         logger.debug(
-            "Loop for l from 1 to (k-1) to find the lth maximal matching and put it in G_(l+1)")
+            "Loop for l from 1 to (k-1) to find the lth maximal matching and put it in G_(l+1)"
+            )
         for l in range(1, k):
             logger.debug(f"Looping on l={l}")
             # Initialization of the unified nodes list
