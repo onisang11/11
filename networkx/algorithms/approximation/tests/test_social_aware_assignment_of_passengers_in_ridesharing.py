@@ -1,7 +1,8 @@
 import math
 
-import networkx as nx
 import pytest
+
+import networkx as nx
 from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import (
     match_and_merge,
 )
