@@ -62,10 +62,10 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     if Graph.number_of_nodes() < k:
         logger.error(
             f"Failed a check Graph.number_of_nodes() ({Graph.number_of_nodes()}) < k ({k}), should now raise an error"
-            )
+        )
         raise nx.NetworkXError(
             "k cannot be greater than the number of nodes in the Graph"
-            )
+        )
     # If k is negative, raise an error
     elif k < 0:
         logger.error(f"Checked for k ({k}) < 0, should now raise an error")
@@ -74,19 +74,19 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     elif k == 0:
         logger.debug(
             f"Checked for k ({k}) == 0, should now return an empty list"
-            )
+        )
         return []
     # If k is 1, return a partition of the Graph, where each node is a list
     elif k == 1:
         logger.debug(
             f"Checked for k ({k}) == 1, should now return a partition of the Graph where each node is a list"
-            )
+        )
         return [[node] for node in Graph.nodes()]
     # If k is 2, run the maximum matching algorithm on the Graph and return the result
     elif k == 2:
         logger.debug(
             f"Checked for k ({k}) == 2, should now run the maximum matching algorithm on the Graph and return the result"
-            )
+        )
         return [list(partition) for partition in nx.maximal_matching(Graph)]
     else:
         logger.debug("Should now run the algorithm")
@@ -100,7 +100,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         # Loop to find the lth maximal matching and put it in G_(l+1)
         logger.debug(
             "Loop for l from 1 to (k-1) to find the lth maximal matching and put it in G_(l+1)"
-            )
+        )
         for l in range(1, k):
             logger.debug(f"Looping on l={l}")
             # Initialization of the unified nodes list
@@ -110,7 +110,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
             M[l] = list(nx.maximal_matching(G[l]))
             logger.debug(
                 f"Found the maximal matching of G_{l}={M[l]} and put it in M[{l}]"
-                )
+            )
             # Make sure that G_(l+1) is a empty graph (It was one of the steps of the algorithm in the article)
             if l + 1 not in G:
                 G[l + 1] = nx.Graph()
@@ -119,7 +119,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
             G[l + 1].add_nodes_from(tuple(G[l].nodes()))
             logger.debug(
                 f"Put the nodes of G_{l}={tuple(G[l].nodes())} in G[{l+1}]"
-                )
+            )
             # For every match in M_l, add a unified node to G_(l+1) so it will be used to find it when needed
             logger.debug(f"Looping on every match in M[{l}]={M[l]}")
             for match in M[l]:
@@ -128,7 +128,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                 unified_nodes.append(match)
                 logger.debug(
                     f"Added match={match} to unified_nodes={unified_nodes}"
-                    )
+                )
                 # Add a unified node to G_(l+1), which is a tuple of the nodes in the match
                 G[l + 1].add_node(match)
                 logger.debug(f"Added a unified node={match} to G[{l+1}]")
@@ -136,11 +136,11 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                 G[l + 1].remove_nodes_from(list(match))
                 logger.debug(
                     f"Removed the nodes in the match={match} from G[{l+1}]"
-                    )
+                )
             # For every unified node in G_(l+1), add every v_q in G_(l+1) that is connected to it in G_l, add an edge between them in G_(l+1)
             logger.debug(
                 f"Looping on every unified node in G[{l+1}] which is {unified_nodes}"
-                )
+            )
             for unified_node in unified_nodes:
                 logger.debug(f"Looping on unified_node={unified_node}")
                 logger.debug(f"Looping on every ununified node in G[{l+1}]")
@@ -148,62 +148,66 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                     logger.debug(f"Looping on v_q={v_q}")
                     logger.debug(
                         f"Making sure that v_q={v_q} is not unified_node={unified_node} and that there is an edge between v_q={v_q} and unified_node={unified_node} in G[{l}]"
-                        )
-                    if unified_node != v_q and any(specific_node != v_q and G[l].has_edge(specific_node, v_q) for specific_node in unified_node):
+                    )
+                    if unified_node != v_q and any(
+                        specific_node != v_q and G[l].has_edge(
+                            specific_node, v_q)
+                        for specific_node in unified_node
+                    ):
                         logger.debug(
                             f"Also making sure that v_q={v_q} is not a tuple and that v_q={v_q} is not in unified_node={unified_node}"
-                            )
+                        )
                         if not isinstance(v_q, tuple):
                             logger.debug(f"v_q={v_q} is not a tuple")
                             logger.debug(
                                 f"Making sure that v_q={v_q} is not in unified_node={unified_node}"
-                                )
+                            )
                             if v_q in unified_node:
                                 logger.debug(
                                     f"v_q={v_q} is in unified_node={unified_node}, so now it should continue to the next v_q"
-                                    )
+                                )
                                 continue
                             else:
                                 logger.debug(
                                     f"v_q={v_q} is not in unified_node={unified_node}, so now it should add an edge between v_q={v_q} and unified_node={unified_node} in G[{l+1}]"
-                                    )
-                                G[l+1].add_edge(unified_node, v_q)
+                                )
+                                G[l + 1].add_edge(unified_node, v_q)
                         elif all(specific_node in unified_node for specific_node in v_q) or all(specific_node in v_q for specific_node in unified_node):
                             logger.debug(f"v_q={v_q} is a tuple")
                             logger.debug(
                                 f"Made sure that all the nodes in v_q={v_q} are in unified_node={unified_node}"
-                                )
+                            )
                             logger.debug(
                                 f"Also checked that all the nodes in unified_node={unified_node} are in v_q={v_q}"
-                                )
+                            )
                             logger.debug(
                                 f"Now it should continue to the next v_q"
-                                )
+                            )
                             continue
                         else:
                             logger.debug(f"v_q={v_q} is a tuple")
-                            G[l+1].add_edge(unified_node, v_q)
+                            G[l + 1].add_edge(unified_node, v_q)
                             logger.debug(
                                 f"Added an edge between v_q={v_q} and unified_node={unified_node} in G[{l+1}]"
-                                )
+                            )
         logger.debug(
             f"Finished looping on l from 1 to (k-1) to find the lth maximal matching and put it in G_(l+1)"
-            )
+        )
         # Initialization of the partition P and for every unified node (which is a tuple of nodes) in G_k, add it to P
         P = [[unified_node] for unified_node in G[k].nodes()]
         logger.debug(
             f"Initialized P={P} and for every unified node (which is a tuple of nodes) in G[{k}]={G[k].nodes()}, added it to P"
-            )
+        )
         # For every partition in P, remove all inner tuple brackets
         logger.debug(f"Lopping on every partition in P={P}")
         for partition in P:
             logger.debug(f"Looping on partition={partition}")
             logger.debug(
                 f"Making sure that there is a tuple in partition={partition}"
-                )
+            )
             logger.debug(
                 f"Starting a while loop that will run until there is no tuple in partition={partition}"
-                )
+            )
             while any(isinstance(node, tuple) for node in partition):
                 logger.debug(f"There is a tuple in partition={partition}")
                 logger.debug(f"Looping on every node in partition={partition}")
@@ -215,17 +219,17 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                         partition.remove(node)
                         logger.debug(
                             f"Removed node={node} from partition={partition}"
-                            )
+                        )
                         partition.extend(list(node))
                         logger.debug(
                             f"Added the nodes in node={node} to partition={partition}"
-                            )
+                        )
                 logger.debug(
                     f"Finished looping on every node in partition={partition}"
-                    )
+                )
             logger.debug(
                 f"Finished looping on every node in partition={partition} and there is no tuple in partition={partition}"
-                )
+            )
             logger.debug(f"Sorting partition={partition}")
             partition.sort()
             logger.debug(f"Sorted partition={partition}")
