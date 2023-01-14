@@ -25,7 +25,7 @@ logging.basicConfig(filename="social_aware_assignment_of_passengers_in_rideshari
 logger = logging.getLogger()
 
 @not_implemented_for("directed")
-def match_and_merge(G: nx.Graph, k: int) -> list:
+def match_and_merge(Graph: nx.Graph, k: int) -> list:
     """
     An approximation algorithm for any k ≥ 3, provides a solution for the social aware assignment problem with a ratio of 1/(k-1).
 
@@ -51,33 +51,33 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
     >>> print(match_and_merge(G, k))
     [[1, 2], [3, 4, 5, 6]]
     """
-    logger.info(f"match_and_merge(G={G}, k={k})")
+    logger.info(f"match_and_merge(Graph={Graph}, k={k})")
     logger.debug("Checking for k correctness")
     # Check if k is correct
-    if G.number_of_nodes() < k:
-        logger.error(f"Failed a check G.number_of_nodes() ({G.number_of_nodes()}) < k ({k}), should now raise an error")
-        raise nx.NetworkXError("k cannot be greater than the number of nodes in the graph G")
+    if Graph.number_of_nodes() < k:
+        logger.error(f"Failed a check Graph.number_of_nodes() ({Graph.number_of_nodes()}) < k ({k}), should now raise an error")
+        raise nx.NetworkXError("k cannot be greater than the number of nodes in the Graph")
     # If k is negative, raise an error
     elif k < 0:
         logger.error(f"Checked for k ({k}) < 0, should now raise an error")
-        raise nx.NetworkXError("k should be 0≤k≤|V(G)|")
+        raise nx.NetworkXError("k should be 0≤k≤|V(Graph)|")
     # If k is 0, return an empty list
     elif k == 0:
         logger.debug(f"Checked for k ({k}) == 0, should now return an empty list")
         return []
-    # If k is 1, return a partition of G where each node is a list
+    # If k is 1, return a partition of the Graph, where each node is a list
     elif k == 1:
-        logger.debug(f"Checked for k ({k}) == 1, should now return a partition of G where each node is a list")
-        return [[node] for node in G.nodes()]
-    # If k is 2, run the maximum matching algorithm on G and return the result
+        logger.debug(f"Checked for k ({k}) == 1, should now return a partition of the Graph where each node is a list")
+        return [[node] for node in Graph.nodes()]
+    # If k is 2, run the maximum matching algorithm on the Graph and return the result
     elif k == 2:
-        logger.debug(f"Checked for k ({k}) == 2, should now run the maximum matching algorithm on G and return the result")
-        return [list(partition) for partition in nx.maximal_matching(G)]
+        logger.debug(f"Checked for k ({k}) == 2, should now run the maximum matching algorithm on the Graph and return the result")
+        return [list(partition) for partition in nx.maximal_matching(Graph)]
     else:
         logger.debug("Should now run the algorithm")
         logger.debug("Initialization of the variables")
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
-        G: Dict[int, nx.Graph] = {1: G}
+        G: Dict[int, nx.Graph] = {1: Graph}
         logger.debug(f"Initialized G={G}")
         # Should contain the maximal matching of G_l
         M: Dict[int, List]= {}
@@ -94,7 +94,8 @@ def match_and_merge(G: nx.Graph, k: int) -> list:
             M[l] = list(nx.maximal_matching(G[l]))
             logger.debug(f"Found the maximal matching of G_{l}={M[l]} and put it in M[{l}]")
             # Make sure that G_(l+1) is a empty graph (It was one of the steps of the algorithm in the article)
-            G[l+1] = nx.Graph()
+            if l+1 not in G:
+                G[l+1] = nx.Graph()
             logger.debug(f"Make an empty graph and put it in G[{l+1}]")
             # Put the nodes of G_l in G_(l+1)
             G[l+1].add_nodes_from(tuple(G[l].nodes()))
