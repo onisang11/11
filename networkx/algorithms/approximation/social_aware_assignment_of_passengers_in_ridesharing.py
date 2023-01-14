@@ -112,11 +112,11 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                 f"Found the maximal matching of G_{l}={M[l]} and put it in M[{l}]"
                 )
             # Make sure that G_(l+1) is a empty graph (It was one of the steps of the algorithm in the article)
-            if l+1 not in G:
-                G[l+1] = nx.Graph()
+            if l + 1 not in G:
+                G[l + 1] = nx.Graph()
             logger.debug(f"Make an empty graph and put it in G[{l+1}]")
             # Put the nodes of G_l in G_(l+1)
-            G[l+1].add_nodes_from(tuple(G[l].nodes()))
+            G[l + 1].add_nodes_from(tuple(G[l].nodes()))
             logger.debug(
                 f"Put the nodes of G_{l}={tuple(G[l].nodes())} in G[{l+1}]"
                 )
@@ -130,10 +130,10 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                     f"Added match={match} to unified_nodes={unified_nodes}"
                     )
                 # Add a unified node to G_(l+1), which is a tuple of the nodes in the match
-                G[l+1].add_node(match)
+                G[l + 1].add_node(match)
                 logger.debug(f"Added a unified node={match} to G[{l+1}]")
                 # Remove the nodes in the match from G_(l+1)
-                G[l+1].remove_nodes_from(list(match))
+                G[l + 1].remove_nodes_from(list(match))
                 logger.debug(
                     f"Removed the nodes in the match={match} from G[{l+1}]"
                     )
@@ -144,7 +144,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
             for unified_node in unified_nodes:
                 logger.debug(f"Looping on unified_node={unified_node}")
                 logger.debug(f"Looping on every ununified node in G[{l+1}]")
-                for v_q in G[l+1].nodes():
+                for v_q in G[l + 1].nodes():
                     logger.debug(f"Looping on v_q={v_q}")
                     logger.debug(
                         f"Making sure that v_q={v_q} is not unified_node={unified_node} and that there is an edge between v_q={v_q} and unified_node={unified_node} in G[{l}]"

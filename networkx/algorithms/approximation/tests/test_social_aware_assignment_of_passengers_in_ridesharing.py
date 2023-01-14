@@ -1,6 +1,6 @@
+import math
 import pytest
 import networkx as nx
-import math
 from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import (
     match_and_merge,
 )
@@ -64,8 +64,7 @@ class Test_social_aware_assignment_of_passengers_in_ridesharing:
             for k in range(5, 15):
                 if k <= n:
                     P = match_and_merge(G, k)
-                    assert [len([p for p in P if n in p])
-                            == 1 for n in G.nodes()]
+                    assert [len([p for p in P if n in p]) == 1 for n in G.nodes()]
 
     def test_8(self):
         # Check that the number of partitions is at most ceil(n/2)
