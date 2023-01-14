@@ -72,9 +72,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         raise nx.NetworkXError("k should be 0≤k≤|V(Graph)|")
     # If k is 0, return an empty list
     elif k == 0:
-        logger.debug(
-            f"Checked for k ({k}) == 0, should now return an empty list"
-        )
+        logger.debug(f"Checked for k ({k}) == 0, should now return an empty list")
         return []
     # If k is 1, return a partition of the Graph, where each node is a list
     elif k == 1:
@@ -117,26 +115,20 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
             logger.debug(f"Make an empty graph and put it in G[{l+1}]")
             # Put the nodes of G_l in G_(l+1)
             G[l + 1].add_nodes_from(tuple(G[l].nodes()))
-            logger.debug(
-                f"Put the nodes of G_{l}={tuple(G[l].nodes())} in G[{l+1}]"
-            )
+            logger.debug(f"Put the nodes of G_{l}={tuple(G[l].nodes())} in G[{l+1}]")
             # For every match in M_l, add a unified node to G_(l+1) so it will be used to find it when needed
             logger.debug(f"Looping on every match in M[{l}]={M[l]}")
             for match in M[l]:
                 logger.debug(f"Looping on match={match}")
                 # Add the match to the unified nodes dictionary, so it will be easier to find the unified nodes in each round
                 unified_nodes.append(match)
-                logger.debug(
-                    f"Added match={match} to unified_nodes={unified_nodes}"
-                )
+                logger.debug(f"Added match={match} to unified_nodes={unified_nodes}")
                 # Add a unified node to G_(l+1), which is a tuple of the nodes in the match
                 G[l + 1].add_node(match)
                 logger.debug(f"Added a unified node={match} to G[{l+1}]")
                 # Remove the nodes in the match from G_(l+1)
                 G[l + 1].remove_nodes_from(list(match))
-                logger.debug(
-                    f"Removed the nodes in the match={match} from G[{l+1}]"
-                )
+                logger.debug(f"Removed the nodes in the match={match} from G[{l+1}]")
             # For every unified node in G_(l+1), add every v_q in G_(l+1) that is connected to it in G_l, add an edge between them in G_(l+1)
             logger.debug(
                 f"Looping on every unified node in G[{l+1}] which is {unified_nodes}"
@@ -150,8 +142,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                         f"Making sure that v_q={v_q} is not unified_node={unified_node} and that there is an edge between v_q={v_q} and unified_node={unified_node} in G[{l}]"
                     )
                     if unified_node != v_q and any(
-                        specific_node != v_q and G[l].has_edge(
-                            specific_node, v_q)
+                        specific_node != v_q and G[l].has_edge(specific_node, v_q)
                         for specific_node in unified_node
                     ):
                         logger.debug(
@@ -172,7 +163,11 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                                     f"v_q={v_q} is not in unified_node={unified_node}, so now it should add an edge between v_q={v_q} and unified_node={unified_node} in G[{l+1}]"
                                 )
                                 G[l + 1].add_edge(unified_node, v_q)
-                        elif all(specific_node in unified_node for specific_node in v_q) or all(specific_node in v_q for specific_node in unified_node):
+                        elif all(
+                            specific_node in unified_node for specific_node in v_q
+                        ) or all(
+                            specific_node in v_q for specific_node in unified_node
+                        ):
                             logger.debug(f"v_q={v_q} is a tuple")
                             logger.debug(
                                 f"Made sure that all the nodes in v_q={v_q} are in unified_node={unified_node}"
@@ -180,9 +175,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                             logger.debug(
                                 f"Also checked that all the nodes in unified_node={unified_node} are in v_q={v_q}"
                             )
-                            logger.debug(
-                                f"Now it should continue to the next v_q"
-                            )
+                            logger.debug(f"Now it should continue to the next v_q")
                             continue
                         else:
                             logger.debug(f"v_q={v_q} is a tuple")
@@ -202,9 +195,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         logger.debug(f"Lopping on every partition in P={P}")
         for partition in P:
             logger.debug(f"Looping on partition={partition}")
-            logger.debug(
-                f"Making sure that there is a tuple in partition={partition}"
-            )
+            logger.debug(f"Making sure that there is a tuple in partition={partition}")
             logger.debug(
                 f"Starting a while loop that will run until there is no tuple in partition={partition}"
             )
@@ -217,16 +208,12 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
                     if isinstance(node, tuple):
                         logger.debug(f"node={node} is a tuple")
                         partition.remove(node)
-                        logger.debug(
-                            f"Removed node={node} from partition={partition}"
-                        )
+                        logger.debug(f"Removed node={node} from partition={partition}")
                         partition.extend(list(node))
                         logger.debug(
                             f"Added the nodes in node={node} to partition={partition}"
                         )
-                logger.debug(
-                    f"Finished looping on every node in partition={partition}"
-                )
+                logger.debug(f"Finished looping on every node in partition={partition}")
             logger.debug(
                 f"Finished looping on every node in partition={partition} and there is no tuple in partition={partition}"
             )
