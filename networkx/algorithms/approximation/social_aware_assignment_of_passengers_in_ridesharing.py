@@ -14,6 +14,7 @@ which is written by Victor Kushnir.
 """
 import logging
 from typing import Dict, List
+
 import networkx as nx
 from networkx.utils import not_implemented_for
 

@@ -1,9 +1,9 @@
 import math
-import pytest
+
 import networkx as nx
-from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import (
-    match_and_merge,
-)
+import pytest
+from networkx.algorithms.approximation.social_aware_assignment_of_passengers_in_ridesharing import \
+    match_and_merge
 
 
 def case_1():
