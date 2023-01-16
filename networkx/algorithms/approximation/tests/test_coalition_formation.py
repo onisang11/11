@@ -15,10 +15,10 @@ which is written by Victor Kushnir.
 """
 import math
 
-import networkx as nx
 import pytest
-from networkx.algorithms.approximation.coalition_formation import \
-    match_and_merge
+
+import networkx as nx
+from networkx.algorithms.approximation.coalition_formation import match_and_merge
 
 
 def small_chain_graph():
