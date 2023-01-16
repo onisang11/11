@@ -17,9 +17,7 @@ import math
 import pytest
 
 import networkx as nx
-from networkx.algorithms.approximation.coalition_formation import (
-    match_and_merge,
-)
+from networkx.algorithms.approximation.coalition_formation import match_and_merge
 
 
 def small_chain_graph():
