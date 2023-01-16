@@ -1,12 +1,11 @@
 """
 Implementation of the Social Aware Assignment of Passengers in Ridesharing
-Which was described in the article:
-Levinger, C., Hazon, N., & Azaria, A. (2022). Social Aware Assignment of Passengers in Ridesharing.
-In Proceedings of the 2022 ACM Conference on Economics and Computation (EC 2022).
-Short version: http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf
-Full version: https://github.com/VictoKu1/ResearchAlgorithmsCourse1/blob/main/Article/2022%2C%20Chaya%20Amos%20Noam%2C%20Socially%20aware%20assignment%20of%20passengers%20in%20ride%20sharing.pdf
+The social aware assignment problem belongs to the field of coalition formation, which is an important research branch 
+within multiagent systems. It analyses the outcome that results when a set of agents is partitioned into coalitions.
+Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs)
 
-Paper ID: 1862
+Which was described in the article:
+Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
 
 Implementation of match_and_merge
 algorithm is based on the pseudocode from the article
@@ -28,19 +27,37 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     """
     An approximation algorithm for any k ≥ 3, provides a solution for the social aware assignment problem with a ratio of 1/(k-1).
 
+    Social aware assignment definition:
+    Given a number k and an undirected friendship graph G = (V, E) where (v_i , v_j) ∈ E if v_i and v_j are connected.
+    The goal is to find an assignment P, which is a partition of the set V , such that ∀S ∈ P, |S|≤ k, and the value of P,
+    V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
+
     As described in the article under the section "Algorithm 1: Match and Merge".
 
-    Function receives a graph G and a number k, and returns a partition P of G of all matched sets.
+    The article:
+    Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
+
+    Function receives a graph G and a number k, and returns a partition P of G of all matched sets, so for ∀S ∈ P, |S|≤ k, and the value of P, V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
 
     The algorithm consists of k - 1 rounds. Each round is composed of a matching phase followed by a merging phase.
     Specifically, in round l MnM computes a maximum matching, M_l ⊆ E_l , for G_l (where G_1 = G). In the merging phase, MnM creates a graph
     G_(l+1) that includes a unified node for each pair of matched nodes. G_(l+1) also includes all unmatched nodes, along with their
     edges to the unified nodes. Clearly, each node in V_l is composed of up-to l nodes
-    from V_1. Finally, MnM returns the partition, P, of all the matched sets.
+    from V_1. Finally, MnM returns the partition, P, of all the matched sets in a way that ∀S ∈ P, |S|≤ k, and the value of P, V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
 
     :param G: Graph
     :param k: Number of passengers
-    :return: A partition P of G of all matched sets
+    :return: A partition P of G of all matched sets so ∀S ∈ P, |S|≤ k, and the value of P, V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
+
+    Examples:
+
+    Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=3:
+    >>> G = nx.Graph()
+    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> G.add_edges_from(list_of_edges)
+    >>> k = 3
+    >>> print(match_and_merge(G, k))
+    [[1, 2], [3, 4, 5], [6]]
 
     Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=4:
     >>> G = nx.Graph()
@@ -55,10 +72,8 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         raise nx.NetworkXError(
             "k cannot be greater than the number of nodes in the Graph"
         )
-    # If k is negative, raise an error
     elif k < 0:
         raise nx.NetworkXError("k should be 0≤k≤|V(Graph)|")
-    # If k is 0, return an empty list
     elif k == 0:
         return []
     # If k is 1, return a partition of the Graph, where each node is a list
