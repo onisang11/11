@@ -1,7 +1,8 @@
 import math
 
-import networkx as nx
 import pytest
+
+import networkx as nx
 from networkx.algorithms.approximation.coalition_formation import match_and_merge
 
 
@@ -85,7 +86,6 @@ class Test_coalition_formation:
             for k in range(5, 15):
                 if k <= n:
                     P = match_and_merge(G, k)
-                    # Check that every partition has at most k nodes
                     assert [len(p) <= k for p in P]
 
     def test_11(self):
