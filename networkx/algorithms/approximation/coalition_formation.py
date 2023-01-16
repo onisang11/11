@@ -2,7 +2,7 @@
 Implementation of the Social Aware Assignment of Passengers in Ridesharing
 The social aware assignment problem belongs to the field of coalition formation, which is an important research branch 
 within multiagent systems. It analyses the outcome that results when a set of agents is partitioned into coalitions.
-Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs)
+Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs).
 
 Which was described in the article:
 Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
