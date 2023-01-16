@@ -1,7 +1,7 @@
 """
-Tests for the :mod:`networkx.algorithms.approximation.coalition_formation` module.
+Testing the :mod:`networkx.algorithms.approximation.coalition_formation` module.
 
-Testing the implementation of the Social Aware Assignment of Passengers in Ridesharing
+Which is the implementation of the Social Aware Assignment of Passengers in Ridesharing
 The social aware assignment problem belongs to the field of coalition formation, which is an important research branch 
 within multiagent systems. It analyses the outcome that results when a set of agents is partitioned into coalitions.
 Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs).
@@ -9,9 +9,8 @@ Actually, Match_And_Merge model is a special case of simple Additively Separable
 Which was described in the article:
 Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
 
-Implementation of match_and_merge
-algorithm is based on the pseudocode from the article
-which is written by Victor Kushnir.
+The match_and_merge algorithm is based on the pseudocode from the article
+which is written (as well as the tests) by Victor Kushnir.
 """
 import math
 
@@ -112,3 +111,4 @@ class Test_coalition_formation:
                 if k <= n:
                     P = match_and_merge(G, k)
                     assert [len([p for p in P if n in p]) == 1 for n in G.nodes()]
+
