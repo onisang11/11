@@ -5,8 +5,7 @@ within multiagent systems. It analyses the outcome that results when a set of ag
 Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs).
 
 Which was described in the article:
-Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
-
+Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, https://github.com/VictoKu1/ResearchAlgorithmsCourse1/raw/main/Article/2022%2C%20Chaya%20Amos%20Noam%2C%20Socially%20aware%20assignment%20of%20passengers%20in%20ride%20sharing.pdf
 Implementation of match_and_merge
 algorithm is based on the pseudocode from the article
 which is written by Victor Kushnir.
@@ -14,7 +13,7 @@ which is written by Victor Kushnir.
 Also, an online web page was built for running the algorithm:
 http://157.230.22.122:5001/
 """
-from typing import Dict, List
+from typing import Dict, Tuple, List
 
 import networkx as nx
 from networkx.utils import not_implemented_for
@@ -35,7 +34,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     As described in the article under the section "Algorithm 1: Match and Merge".
 
     The article:
-    Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
+    Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, https://github.com/VictoKu1/ResearchAlgorithmsCourse1/raw/main/Article/2022%2C%20Chaya%20Amos%20Noam%2C%20Socially%20aware%20assignment%20of%20passengers%20in%20ride%20sharing.pdf.
 
     Function receives a graph G and a number k, and returns a partition P of G of all matched sets, so for ∀S ∈ P, |S|≤ k, and the value of P, V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
 
@@ -50,6 +49,22 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     :return: A partition P of G of all matched sets so ∀S ∈ P, |S|≤ k, and the value of P, V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
 
     Examples:
+
+    Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=1:
+    >>> G = nx.Graph()
+    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> G.add_edges_from(list_of_edges)
+    >>> k = 1
+    >>> print(match_and_merge(G, k))
+    [[1], [2], [3], [4], [5], [6]]
+
+    Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=2:
+    >>> G = nx.Graph()
+    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> G.add_edges_from(list_of_edges)
+    >>> k = 2
+    >>> print(match_and_merge(G, k))
+    [[1, 2], [3, 4], [5], [6]]
 
     Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=3:
     >>> G = nx.Graph()
@@ -79,9 +94,6 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     # If k is 1, return a partition of the Graph, where each node is a list
     elif k == 1:
         return [[node] for node in Graph.nodes()]
-    # If k is 2, run the maximum matching algorithm on the Graph and return the result
-    elif k == 2:
-        return [list(partition) for partition in nx.maximal_matching(Graph)]
     else:
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
         G: Dict[int, nx.Graph] = {1: Graph}
@@ -109,34 +121,39 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
             # For every unified node in G_(l+1), add every v_q in G_(l+1) that is connected to it in G_l, add an edge between them in G_(l+1)
             for unified_node in unified_nodes:
                 for v_q in G[l + 1].nodes():
-                    if unified_node != v_q and any(
-                        specific_node != v_q and G[l].has_edge(specific_node, v_q)
-                        for specific_node in unified_node
-                    ):
-                        if not isinstance(v_q, tuple):
-                            if v_q in unified_node:
-                                continue
-                            else:
-                                G[l + 1].add_edge(unified_node, v_q)
-                        elif all(
-                            specific_node in unified_node for specific_node in v_q
-                        ) or all(
-                            specific_node in v_q for specific_node in unified_node
-                        ):
-                            continue
-                        else:
-                            G[l + 1].add_edge(unified_node, v_q)
+                    if G[l].has_edge(unified_node, v_q) or G[l].has_edge(unified_node[0], v_q) or G[l].has_edge(unified_node[1], v_q):
+                        G[l + 1].add_edge(unified_node, v_q)
         # Initialization of the partition P and for every unified node (which is a tuple of nodes) in G_k, add it to P
         P = [[unified_node] for unified_node in G[k].nodes()]
-        # For every partition in P, remove all inner tuple brackets
-        for partition in P:
-            while any(isinstance(node, tuple) for node in partition):
-                for node in partition:
-                    if isinstance(node, tuple):
-                        partition.remove(node)
-                        partition.extend(list(node))
-            partition.sort()
-        # For every partition in P, sort it
-        P.sort()
+        P = tuplesflattener(P)
     # Return P
+    return P
+
+
+def tuplesflattener(P: List[Tuple]) -> List[List]:
+    """
+    This function receives a list of partitions, which may contain nested tuples, and returns a list of lists which doesn't contain any tuples.
+
+    :param P: A list of partitions, which may contain nested tuples
+    :return: A list of lists which doesn't contain any tuples
+
+    Examples:
+
+    >>> P = [[(1, (2, (3, (4, 5))))]]
+    >>> print(tuplesflattener(P))
+    [[1, 2, 3, 4, 5]]
+    """
+    # Loop through every partition in P
+    for partition in P:
+        # While there are tuples in the partition, remove them and add their elements to the partition
+        while any(isinstance(node, tuple) for node in partition):
+            for node in partition:
+                # If the node is a tuple, remove it and add its elements to the partition
+                if isinstance(node, tuple):
+                    partition.remove(node)
+                    partition.extend(list(node))
+        # Sort the partitions
+        partition.sort()
+    # Sort P
+    P.sort()
     return P

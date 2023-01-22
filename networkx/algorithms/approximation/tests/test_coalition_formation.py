@@ -7,7 +7,7 @@ within multiagent systems. It analyses the outcome that results when a set of ag
 Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs).
 
 Which was described in the article:
-Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, http://azariaa.com/Content/Publications/Social_Assignment_SA.pdf.
+Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, https://github.com/VictoKu1/ResearchAlgorithmsCourse1/raw/main/Article/2022%2C%20Chaya%20Amos%20Noam%2C%20Socially%20aware%20assignment%20of%20passengers%20in%20ride%20sharing.pdf.
 
 The match_and_merge algorithm is based on the pseudocode from the article
 which is written (as well as the tests) by Victor Kushnir.
@@ -49,7 +49,7 @@ class Test_coalition_formation:
 
     def test_small_chain_graph_with_k_2_returns_correct_partition(self):
         G_1 = small_chain_graph()
-        assert match_and_merge(G_1, k=2) == [[1, 2], [3, 4]]
+        assert match_and_merge(G_1, k=2) == [[1, 2], [3, 4], [5], [6]]
 
     def test_clique_graph_of_size_3_with_k_3_returns_correct_partition(self):
         G_clique_3 = clique_graph_of_size_3()
@@ -111,3 +111,4 @@ class Test_coalition_formation:
                 if k <= n:
                     P = match_and_merge(G, k)
                     assert [len([p for p in P if n in p]) == 1 for n in G.nodes()]
+            
