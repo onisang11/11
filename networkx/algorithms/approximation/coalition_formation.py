@@ -52,7 +52,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
 
     Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=1:
     >>> G = nx.Graph()
-    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> list_of_edges = [(4, 6), (4, 5), (3, 4), (2, 3), (1, 2)]
     >>> G.add_edges_from(list_of_edges)
     >>> k = 1
     >>> print(match_and_merge(G, k))
@@ -60,7 +60,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
 
     Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=2:
     >>> G = nx.Graph()
-    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> list_of_edges = [(4, 6), (4, 5), (3, 4), (2, 3), (1, 2)]
     >>> G.add_edges_from(list_of_edges)
     >>> k = 2
     >>> print(match_and_merge(G, k))
@@ -68,15 +68,15 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
 
     Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=3:
     >>> G = nx.Graph()
-    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> list_of_edges = [(4, 6), (4, 5), (3, 4), (2, 3), (1, 2)]
     >>> G.add_edges_from(list_of_edges)
     >>> k = 3
     >>> print(match_and_merge(G, k))
-    [[1, 2], [3, 4, 5], [6]]
+    [[1, 2], [3, 4, 6], [5]]
 
     Example where G={(v1,v2),(v2,v3),(v3,v4),(v4,v5),(v4,v6)} and k=4:
     >>> G = nx.Graph()
-    >>> list_of_edges = [(1, 2), (2, 3), (3, 4), (4, 5), (4, 6)]
+    >>> list_of_edges = [(4, 6), (4, 5), (3, 4), (2, 3), (1, 2)]
     >>> G.add_edges_from(list_of_edges)
     >>> k = 4
     >>> print(match_and_merge(G, k))
@@ -93,18 +93,22 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         return []
     # If k is 1, return a partition of the Graph, where each node is a list
     elif k == 1:
-        return [[node] for node in Graph.nodes()]
+        return sorted([[node] for node in Graph.nodes()])
     else:
+        # The nodes and the edges of G_1 are sorted in descending order so the maximal matching will be as close to the matching in the article as possible
+        G = nx.Graph()
+        G.add_nodes_from(sorted((Graph.nodes()), reverse=True))
+        G.add_edges_from(sorted((Graph.edges()), reverse=True))
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
-        G: Dict[int, nx.Graph] = {1: Graph}
+        G: Dict[int, nx.Graph] = {1: G}
         # Should contain the maximal matching of G_l
         M: Dict[int, List] = {}
         # Loop to find the lth maximal matching and put it in G_(l+1)
         for l in range(1, k):
             # Initialization of the unified nodes list
             unified_nodes: List = []
-            # Find the maximal matching of G_l
-            M[l] = list(nx.maximal_matching(G[l]))
+            # Find the maximum matching of G_l
+            M[l] = list(nx.max_weight_matching(G[l], weight=1))
             # Make sure that G_(l+1) is a empty graph (It was one of the steps of the algorithm in the article)
             if l + 1 not in G:
                 G[l + 1] = nx.Graph()
