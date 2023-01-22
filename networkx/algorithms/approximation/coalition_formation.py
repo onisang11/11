@@ -11,7 +11,7 @@ algorithm is based on the pseudocode from the article
 which is written by Victor Kushnir.
 
 Also, an online web page was built for running the algorithm:
-http://157.230.22.122:5001/
+https://victoku1.pythonanywhere.com/
 """
 from typing import Dict, List
 
