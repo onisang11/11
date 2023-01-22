@@ -13,7 +13,7 @@ which is written by Victor Kushnir.
 Also, an online web page was built for running the algorithm:
 http://157.230.22.122:5001/
 """
-from typing import Dict, List, Tuple
+from typing import Dict, List
 
 import networkx as nx
 from networkx.utils import not_implemented_for
@@ -134,7 +134,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     return P
 
 
-def tuplesflattener(P: List[Tuple]) -> List[List]:
+def tuplesflattener(P: list) -> list:
     """
     This function receives a list of partitions, which may contain nested tuples, and returns a list of lists which doesn't contain any tuples.
 
