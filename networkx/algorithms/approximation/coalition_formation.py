@@ -96,11 +96,11 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         return sorted([[node] for node in Graph.nodes()])
     else:
         # The nodes and the edges of G_1 are sorted in descending order so the maximal matching will be as close to the matching in the article as possible
-        G = nx.Graph()
-        G.add_nodes_from(sorted((Graph.nodes()), reverse=True))
-        G.add_edges_from(sorted((Graph.edges()), reverse=True))
+        G_1 = nx.Graph()
+        G_1.add_nodes_from(sorted((Graph.nodes()), reverse=True))
+        G_1.add_edges_from(sorted((Graph.edges()), reverse=True))
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
-        G: Dict[int, nx.Graph] = {1: G}
+        G: Dict[int, nx.Graph] = {1: G_1}
         # Should contain the maximal matching of G_l
         M: Dict[int, List] = {}
         # Loop to find the lth maximal matching and put it in G_(l+1)

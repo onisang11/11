@@ -13,12 +13,10 @@ The match_and_merge algorithm is based on the pseudocode from the article
 which is written (as well as the tests) by Victor Kushnir.
 """
 import math
-
 import random
 
-import pytest
-
 import networkx as nx
+import pytest
 from networkx.algorithms.approximation.coalition_formation import match_and_merge
 
 
