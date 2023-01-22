@@ -111,4 +111,3 @@ class Test_coalition_formation:
                 if k <= n:
                     P = match_and_merge(G, k)
                     assert [len([p for p in P if n in p]) == 1 for n in G.nodes()]
-            

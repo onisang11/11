@@ -13,7 +13,7 @@ which is written by Victor Kushnir.
 Also, an online web page was built for running the algorithm:
 http://157.230.22.122:5001/
 """
-from typing import Dict, Tuple, List
+from typing import Dict, List, Tuple
 
 import networkx as nx
 from networkx.utils import not_implemented_for
@@ -121,7 +121,11 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
             # For every unified node in G_(l+1), add every v_q in G_(l+1) that is connected to it in G_l, add an edge between them in G_(l+1)
             for unified_node in unified_nodes:
                 for v_q in G[l + 1].nodes():
-                    if G[l].has_edge(unified_node, v_q) or G[l].has_edge(unified_node[0], v_q) or G[l].has_edge(unified_node[1], v_q):
+                    if (
+                        G[l].has_edge(unified_node, v_q)
+                        or G[l].has_edge(unified_node[0], v_q)
+                        or G[l].has_edge(unified_node[1], v_q)
+                    ):
                         G[l + 1].add_edge(unified_node, v_q)
         # Initialization of the partition P and for every unified node (which is a tuple of nodes) in G_k, add it to P
         P = [[unified_node] for unified_node in G[k].nodes()]
