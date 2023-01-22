@@ -15,8 +15,9 @@ which is written (as well as the tests) by Victor Kushnir.
 import math
 import random
 
-import networkx as nx
 import pytest
+
+import networkx as nx
 from networkx.algorithms.approximation.coalition_formation import match_and_merge
 
 
