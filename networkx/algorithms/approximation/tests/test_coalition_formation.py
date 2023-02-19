@@ -15,9 +15,8 @@ which is written (as well as the tests) by Victor Kushnir.
 import math
 import random
 
-import pytest
-
 import networkx as nx
+import pytest
 from networkx.algorithms.approximation.coalition_formation import match_and_merge
 
 
@@ -127,7 +126,7 @@ class Test_coalition_formation:
             assert len(P) == len(
                 [
                     tuple(sorted(p))
-                    for p in sorted(list(nx.max_weight_matching(G_test, weight=1)))
+                    for p in sorted(nx.max_weight_matching(G_test, weight=1))
                 ]
             )
 
@@ -153,10 +152,7 @@ class Test_coalition_formation:
                         if G.has_edge(i, j):
                             V_P += 1
             assert V_P >= len(
-                [
-                    tuple(sorted(p))
-                    for p in sorted(list(nx.max_weight_matching(G, weight=1)))
-                ]
+                [tuple(sorted(p)) for p in sorted(nx.max_weight_matching(G, weight=1))]
             )
 
     def test_disconnected_components_weighted_graph_with_k_5_returns_correct_partition(
