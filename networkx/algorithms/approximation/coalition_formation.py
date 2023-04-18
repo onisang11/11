@@ -33,13 +33,13 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
     As described in the article under the section "Algorithm 1: Match and Merge".
 
     The article:
-    
+
     Levinger C., Hazon N., Azaria A. Social Aware Assignment of Passengers in Ridesharing. - 2022, https://github.com/VictoKu1/ResearchAlgorithmsCourse1/raw/main/Article/2022%2C%20Chaya%20Amos%20Noam%2C%20Socially%20aware%20assignment%20of%20passengers%20in%20ride%20sharing.pdf.
 
     Function receives a graph G and a number k, and returns a partition P of G of all matched sets, so for ∀S ∈ P, |S|≤ k, and the value of P, V_P = |{(v_i , v_j) ∈ E: ∃S ∈ P where v_i ∈ S and v_j ∈ S}| is maximized.
 
     The algorithm consists of k - 1 rounds. Each round is composed of a matching phase followed by a merging phase.
-    
+
     Specifically, in round l MnM computes a maximum matching, M_l ⊆ E_l , for G_l (where G_1 = G). In the merging phase, MnM creates a graph
     G_(l+1) that includes a unified node for each pair of matched nodes. G_(l+1) also includes all unmatched nodes, along with their
     edges to the unified nodes. Clearly, each node in V_l is composed of up-to l nodes
