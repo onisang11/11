@@ -100,13 +100,13 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         G_1.add_nodes_from(sorted((Graph.nodes()), reverse=True))
         G_1.add_edges_from(sorted((Graph.edges()), reverse=True))
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
-        G: Dict[int, nx.Graph] = {1: G_1}
+        G: dict[int, nx.Graph] = {1: G_1}
         # Should contain the maximal matching of G_l
-        M: Dict[int, List] = {}
+        M: dict[int, List] = {}
         # Loop to find the lth maximal matching and put it in G_(l+1)
         for l in range(1, k):
             # Initialization of the unified nodes list
-            unified_nodes: List = []
+            unified_nodes: list = []
             # Find the maximum matching of G_l
             M[l] = list(nx.max_weight_matching(G[l], weight=1))
             # Make sure that G_(l+1) is a empty graph (It was one of the steps of the algorithm in the article)
