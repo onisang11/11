@@ -102,7 +102,7 @@ def match_and_merge(Graph: nx.Graph, k: int) -> list:
         # Implement G_l=(V_l,E_l) using a dictionary which contains a tuple of V_l and E_l
         G: dict[int, nx.Graph] = {1: G_1}
         # Should contain the maximal matching of G_l
-        M: dict[int, List] = {}
+        M: dict[int, list] = {}
         # Loop to find the lth maximal matching and put it in G_(l+1)
         for l in range(1, k):
             # Initialization of the unified nodes list
