@@ -13,8 +13,6 @@ which is written by Victor Kushnir.
 Also, an online web page was built for running the algorithm:
 https://victoku1.pythonanywhere.com/
 """
-from typing import Dict, List
-
 import networkx as nx
 from networkx.utils import not_implemented_for
 
