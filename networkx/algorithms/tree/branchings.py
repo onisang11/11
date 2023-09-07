@@ -73,6 +73,7 @@ def _max_weight(weight):
     return weight
 
 
+@nx._dispatch(edge_attrs={"attr": "default"})
 def branching_weight(G, attr="weight", default=1):
     """
     Returns the total weight of a branching.
@@ -107,6 +108,7 @@ def branching_weight(G, attr="weight", default=1):
 
 
 @py_random_state(4)
+@nx._dispatch(edge_attrs={"attr": "default"})
 def greedy_branching(G, attr="weight", default=1, kind="max", seed=None):
     """
     Returns a branching obtained through a greedy algorithm.
@@ -209,6 +211,11 @@ class MultiDiGraph_EdgeKey(nx.MultiDiGraph):
         self._cls = cls
         self.edge_index = {}
 
+        import warnings
+
+        msg = "MultiDiGraph_EdgeKey has been deprecated and will be removed in NetworkX 3.4."
+        warnings.warn(msg, DeprecationWarning)
+
     def remove_node(self, n):
         keys = set()
         for keydict in self.pred[n].values():
@@ -270,7 +277,7 @@ def get_path(G, u, v):
     # in the shortest path.
 
     def first_key(i, vv):
-        # Needed for 2.x/3.x compatibilitity
+        # Needed for 2.x/3.x compatibility
         keys = G[nodes[i]][vv].keys()
         # Normalize behavior
         keys = list(keys)
@@ -314,6 +321,11 @@ class Edmonds:
         # Since we will be creating graphs with new nodes, we need to make
         # sure that our node names do not conflict with the real node names.
         self.template = random_string(seed=seed) + "_{0}"
+
+        import warnings
+
+        msg = "Edmonds has been deprecated and will be removed in NetworkX 3.4. Please use the approiate minimum or maximum branching or arborescence function directly."
+        warnings.warn(msg, DeprecationWarning)
 
     def _init(self, attr, default, kind, style, preserve_attrs, seed, partition):
         """
@@ -733,6 +745,10 @@ class Edmonds:
         return H
 
 
+@nx._dispatch(
+    edge_attrs={"attr": "default", "partition": 0},
+    preserve_edge_attrs="preserve_attrs",
+)
 def maximum_branching(
     G,
     attr="weight",
@@ -821,7 +837,7 @@ def maximum_branching(
             d[partition] = data.get(partition)
 
         if preserve_attrs:
-            for d_k, d_v in d.items():
+            for d_k, d_v in data.items():
                 if d_k != attr:
                     d[d_k] = d_v
 
@@ -1157,6 +1173,10 @@ def maximum_branching(
     return H
 
 
+@nx._dispatch(
+    edge_attrs={"attr": "default", "partition": None},
+    preserve_edge_attrs="preserve_attrs",
+)
 def minimum_branching(
     G, attr="weight", default=1, preserve_attrs=False, partition=None
 ):
@@ -1174,6 +1194,10 @@ def minimum_branching(
     return B
 
 
+@nx._dispatch(
+    edge_attrs={"attr": "default", "partition": None},
+    preserve_edge_attrs="preserve_attrs",
+)
 def minimal_branching(
     G, /, *, attr="weight", default=1, preserve_attrs=False, partition=None
 ):
@@ -1234,6 +1258,10 @@ def minimal_branching(
     return B
 
 
+@nx._dispatch(
+    edge_attrs={"attr": "default", "partition": None},
+    preserve_edge_attrs="preserve_attrs",
+)
 def maximum_spanning_arborescence(
     G, attr="weight", default=1, preserve_attrs=False, partition=None
 ):
@@ -1272,6 +1300,10 @@ def maximum_spanning_arborescence(
     return B
 
 
+@nx._dispatch(
+    edge_attrs={"attr": "default", "partition": None},
+    preserve_edge_attrs="preserve_attrs",
+)
 def minimum_spanning_arborescence(
     G, attr="weight", default=1, preserve_attrs=False, partition=None
 ):

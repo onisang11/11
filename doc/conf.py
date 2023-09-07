@@ -113,7 +113,7 @@ add_module_names = False
 # pygments_style = 'friendly'
 pygments_style = "sphinx"
 
-# A list of prefixs that are ignored when creating the module index. (new in Sphinx 0.6)
+# A list of prefixes that are ignored when creating the module index. (new in Sphinx 0.6)
 modindex_common_prefix = ["networkx."]
 
 doctest_global_setup = "import networkx as nx"
@@ -127,7 +127,6 @@ html_theme_options = {
     "collapse_navigation": True,
     "navigation_depth": 2,
     "show_prev_next": False,
-    "announcement": "<p><a href='https://forms.gle/NUGcBxyjx5onbAgc8'> NetworkX User Survey 2023</a> 🎉 Fill out the survey to tell us about your ideas, complaints, praises of NetworkX!</p>",
     "icon_links": [
         {"name": "Home Page", "url": "https://networkx.org", "icon": "fas fa-home"},
         {
