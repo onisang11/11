@@ -1,9 +1,9 @@
 """
-Testing the :mod:`networkx.algorithms.approximation.coalition_formation` module.
+Testing the :mod:`networkx.algorithms.community.community_formation` module.
 
 Which is the implementation of the Social Aware Assignment of Passengers in Ridesharing
-The social aware assignment problem belongs to the field of coalition formation, which is an important research branch 
-within multiagent systems. It analyses the outcome that results when a set of agents is partitioned into coalitions.
+The social aware assignment problem belongs to the field of community formation, which is an important research branch 
+within multiagent systems. It analyses the outcome that results when a set of agents is partitioned into communities.
 Actually, Match_And_Merge model is a special case of simple Additively Separable Hedonic Games (ASHGs).
 
 Which was described in the article:
@@ -18,7 +18,7 @@ import random
 import pytest
 
 import networkx as nx
-from networkx.algorithms.approximation.coalition_formation import match_and_merge
+from networkx.algorithms.community.community_formation import match_and_merge
 
 
 def small_chain_graph():
@@ -35,7 +35,7 @@ def clique_graph_of_size_3():
     return G
 
 
-class Test_coalition_formation:
+class Test_community_formation:
     def test_empty_graph_returns_empty_list(self):
         G_empty = nx.Graph()
         assert match_and_merge(G_empty, k=0) == []
