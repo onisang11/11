@@ -86,7 +86,6 @@ the test using `item.add_marker(pytest.mark.xfail(reason=...))`.
 """
 import inspect
 import os
-import sys
 import warnings
 from functools import partial
 from importlib.metadata import entry_points
@@ -94,8 +93,13 @@ from importlib.metadata import entry_points
 import networkx as nx
 
 from ..exception import NetworkXNotImplemented
+from .decorators import argmap
 
 __all__ = ["_dispatchable"]
+
+
+def _do_nothing():
+    """This does nothing at all, yet it helps turn `_dispatchable` into functions."""
 
 
 def _get_backends(group, *, load_and_call=False):
@@ -348,6 +352,11 @@ class _dispatchable:
             raise KeyError(
                 f"Algorithm already exists in dispatch registry: {name}"
             ) from None
+        # Use the magic of `argmap` to turn `self` into a function. This does result
+        # in small additional overhead compared to calling `_dispatchable` directly,
+        # but `argmap` has the magical property that it can stack with other `argmap`
+        # decorators "for free". Being a function is better for REPRs and type-checkers.
+        self = argmap(_do_nothing)(self)
         _registered_algorithms[name] = self
         return self
 
@@ -962,25 +971,36 @@ class _dispatchable:
                 continue
 
             func_info = info["functions"][self.name]
-            if "extra_docstring" in func_info:
+
+            # Renaming extra_docstring to additional_docs
+            if func_docs := (
+                func_info.get("additional_docs") or func_info.get("extra_docstring")
+            ):
                 lines.extend(
-                    f"  {line}" if line else line
-                    for line in func_info["extra_docstring"].split("\n")
+                    f"  {line}" if line else line for line in func_docs.split("\n")
                 )
                 add_gap = True
             else:
                 add_gap = False
-            if "extra_parameters" in func_info:
+
+            # Renaming extra_parameters to additional_parameters
+            if extra_parameters := (
+                func_info.get("extra_parameters")
+                or func_info.get("additional_parameters")
+            ):
                 if add_gap:
                     lines.append("")
-                lines.append("  Extra parameters:")
-                extra_parameters = func_info["extra_parameters"]
+                lines.append("  Additional parameters:")
                 for param in sorted(extra_parameters):
                     lines.append(f"    {param}")
                     if desc := extra_parameters[param]:
                         lines.append(f"      {desc}")
                     lines.append("")
             else:
+                lines.append("")
+
+            if func_url := func_info.get("url"):
+                lines.append(f"[`Source <{func_url}>`_]")
                 lines.append("")
 
         lines.pop()  # Remove last empty line
