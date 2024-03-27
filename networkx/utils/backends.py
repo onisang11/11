@@ -157,6 +157,7 @@ Notes
 """
 
 import inspect
+import logging
 import os
 import warnings
 from functools import partial
@@ -171,6 +172,8 @@ __all__ = ["_dispatchable", "config"]
 
 def _do_nothing():
     """This does nothing at all, yet it helps turn `_dispatchable` into functions."""
+
+_logger = logging.getLogger(__name__)
 
 
 def _get_backends(group, *, load_and_call=False):
@@ -707,6 +710,10 @@ class _dispatchable:
                         fallback_to_nx=self._fallback_to_nx,
                     )
                 # All graphs are backend graphs--no need to convert!
+                _logger.debug(
+                    f"using backend '{graph_backend_name}' for call to `{self.name}' "
+                    f"with args: {args}, kwargs: {kwargs}"
+                )
                 return getattr(backend, self.name)(*args, **kwargs)
             # Future work: try to convert and run with other backends in backend_priority
             raise nx.NetworkXNotImplemented(
@@ -1001,6 +1008,10 @@ class _dispatchable:
             converted_args, converted_kwargs = self._convert_arguments(
                 backend_name, args, kwargs
             )
+            _logger.debug(
+                f"using backend '{backend_name}' for call to `{self.name}' "
+                f"with args: {converted_args}, kwargs: {converted_kwargs}"
+            )
             result = getattr(backend, self.name)(*converted_args, **converted_kwargs)
         except (NotImplementedError, nx.NetworkXNotImplemented) as exc:
             if fallback_to_nx:
@@ -1075,6 +1086,10 @@ class _dispatchable:
         try:
             converted_args, converted_kwargs = self._convert_arguments(
                 backend_name, args1, kwargs1
+            )
+            _logger.debug(
+                f"using backend '{backend_name}' for call to `{self.name}' "
+                f"with args: {converted_args}, kwargs: {converted_kwargs}"
             )
             result = getattr(backend, self.name)(*converted_args, **converted_kwargs)
         except (NotImplementedError, nx.NetworkXNotImplemented) as exc:
