@@ -93,7 +93,7 @@ def is_simple_path(G, nodes):
 
 @nx._dispatchable
 def all_simple_paths(G, source, target, cutoff=None):
-    """Generate all simple paths in the graph G from source to target.
+    """Generate all simple paths in the graph `G` from `source` to `target`.
 
     A simple path is a path with no repeated nodes.
 
@@ -110,11 +110,11 @@ def all_simple_paths(G, source, target, cutoff=None):
     cutoff : integer, optional
         Depth to stop the search. Only paths of length <= cutoff are returned.
 
-    Returns
-    -------
-    path_generator: generator
-       A generator that produces lists of simple paths.  If there are no paths
-       between the source and target within the given cutoff the generator
+    Yields
+    ------
+    path : list of nodes
+       A list of nodes representing a simple path. If there are no paths
+       between `source` and `target` within the given `cutoff` the generator
        produces no output. If it is possible to traverse the same sequence of
        nodes in multiple ways, namely through parallel edges, then it will be
        returned multiple times (once for each viable edge combination).
@@ -259,7 +259,7 @@ def all_simple_paths(G, source, target, cutoff=None):
 
 @nx._dispatchable
 def all_simple_edge_paths(G, source, target, cutoff=None):
-    """Generate lists of edges for all simple paths in G from source to target.
+    """Generate lists of edges for all simple paths in `G` from `source` to `target`.
 
     A simple path is a path with no repeated nodes.
 
@@ -276,18 +276,17 @@ def all_simple_edge_paths(G, source, target, cutoff=None):
     cutoff : integer, optional
         Depth to stop the search. Only paths of length <= cutoff are returned.
 
-    Returns
-    -------
-    path_generator: generator
-       A generator that produces lists of simple paths.  If there are no paths
-       between the source and target within the given cutoff the generator
+    Yields
+    ------
+    path : list of nodes
+       A list of nodes representing a simple path. If there are no paths
+       between `source` and `target` within the given `cutoff` the generator
        produces no output.
-       For multigraphs, the list of edges have elements of the form `(u,v,k)`.
-       Where `k` corresponds to the edge key.
+       For multigraphs, the list of edges have elements of the form ``(u, v, k)``
+       where ``k`` corresponds to the edge key.
 
     Examples
     --------
-
     Print the simple path edges of a Graph::
 
         >>> g = nx.Graph([(1, 2), (2, 4), (1, 3), (3, 4)])
@@ -404,8 +403,7 @@ def _all_simple_edge_paths(G, source, targets, cutoff):
 @not_implemented_for("multigraph")
 @nx._dispatchable(edge_attrs="weight")
 def shortest_simple_paths(G, source, target, weight=None):
-    """Generate all simple paths in the graph G from source to target,
-       starting from shortest ones.
+    """All simple paths in `G` from `source` to `target`, starting from the shortest ones.
 
     A simple path is a path with no repeated nodes.
 
@@ -434,11 +432,11 @@ def shortest_simple_paths(G, source, target, weight=None):
         If None all edges are considered to have unit weight. Default
         value None.
 
-    Returns
-    -------
-    path_generator: generator
-       A generator that produces lists of simple paths, in order from
-       shortest to longest.
+    Yields
+    ------
+    list
+       A list of nodes representing a simple path. Paths are yielded in order
+       according to path length, from shortest to longest.
 
     Raises
     ------
