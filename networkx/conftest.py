@@ -116,11 +116,6 @@ def set_warnings():
     warnings.filterwarnings(
         "ignore",
         category=DeprecationWarning,
-        message="The function `join` is deprecated",
-    )
-    warnings.filterwarnings(
-        "ignore",
-        category=DeprecationWarning,
         message="\n\nstrongly_connected_components_recursive",
     )
     warnings.filterwarnings(
