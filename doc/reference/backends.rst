@@ -2,18 +2,21 @@
 Backends and Configs
 ********************
 
-.. note:: Both NetworkX backend and config systems are experimental. They
+.. note:: Both NetworkX backend and config systems are experimental. Backends
    let you execute an alternative backend implementation instead of NetworkX's
-   pure Python dictionaries implementation. Things will almost certainly
-   change and break in future releases!
+   pure Python dictionaries implementation. The config system provides library level
+   storage of configuration settings that otherwise might come from environment
+   variables. Both of these systems are experimental and details will almost
+   certainly change in future releases!
 
 Backends
 --------
 .. automodule:: networkx.utils.backends
 
-Decorator: _dispatchable
-------------------------
-.. autodecorator:: _dispatchable
+.. autosummary::
+   :toctree: generated/
+
+   _dispatchable
 
 Configs
 -------
