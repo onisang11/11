@@ -15,12 +15,14 @@ For the other layout routines, the extent is
 Warning: Most layout routines have only been tested in 2-dimensions.
 
 """
+
 import networkx as nx
 from networkx.utils import np_random_state
 
 __all__ = [
     "bipartite_layout",
     "circular_layout",
+    "forceatlas2_layout",
     "kamada_kawai_layout",
     "random_layout",
     "rescale_layout",
@@ -1231,6 +1233,225 @@ def arf_layout(
             break
         n_iter += 1
     return dict(zip(G.nodes(), p))
+
+
+def estimate_factor(n, swing, traction, speed, speed_efficiency, jitter_tolerance):
+    """
+    ForceAtlas2 helper function
+    Computes scaling factor for force
+    """
+    import numpy as np
+
+    # estimate jitter
+    opt_jitter = 0.05 * np.sqrt(n)
+    min_jitter = np.sqrt(opt_jitter)
+    max_jitter = 10
+    min_speed_efficiency = 0.05
+
+    other = min(max_jitter, opt_jitter * traction / n**2)
+    jitter = jitter_tolerance * max(min_jitter, other)
+
+    if swing / traction > 2.0:
+        if speed_efficiency > min_speed_efficiency:
+            speed_efficiency *= 0.5
+        jitter = max(jitter, jitter_tolerance)
+    if swing == 0:
+        target_speed = np.inf
+    else:
+        target_speed = jitter * speed_efficiency * traction / swing
+
+    if swing > jitter * traction:
+        if speed_efficiency > min_speed_efficiency:
+            speed_efficiency *= 0.7
+    elif speed < 1000:
+        speed_efficiency *= 1.3
+
+    max_rise = 0.5
+    speed = speed + min(target_speed - speed, max_rise * speed)
+    return speed, speed_efficiency
+
+
+def forceatlas2_layout(
+    G,
+    pos=None,
+    *,
+    n_iter=100,
+    jitter_tolerance=1.0,
+    scaling_ratio=2.0,
+    gravity=1.0,
+    distributed_action=False,
+    strong_gravity=False,
+    node_mass=None,
+    node_size=None,
+    weight=None,
+    dissuade_hubs=False,
+    linlog=False,
+    dim=2,
+):
+    """Forceatlas2 layout for networkx
+
+    See [1] for more info on the parameters
+
+    [1]: https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0098679&type=printable
+    Parameters
+    ----------
+    G : nx.Graph
+       Netwrorkx graph
+    pos: dict or None
+       Optional starting positions
+    n_iter: int
+        Simulation steps
+    jitter_tolerance : float
+        Jitter  tolerance  for  adjusting  speed  of  layout
+        generation
+    scaling_ratio : float
+        Controls  force scaling  constants k_attraction  and
+        k_repulsion
+    distributed_action : bool
+    strong_gravity : bool
+        Controls the  "pull" to  the center  of mass  of the
+        plot (0,0)
+    node_mass: None  or dict
+    Dictionary mapping the node to a mass value. Mass control the attraction of other nodes to eachother, higher mass for a given node means higher attraction. Value defaults to node degree + 1
+    node_size: None or dict (default None)
+    Dictionary mapping the node to a size. Setting a high value will prevent crowding effect and creates a halo around a node.
+    dissuade_hubs : bool
+        Prevent hub clustering
+    linlog : bool
+        Use log attraction rather than linear attraction
+    dim: int,
+       Sets the dimensions of the layout. This parameter is ignored if pos is given.
+
+    Examples
+    --------
+    >>> import networkx as nx
+    >>> G = nx.florentine_families_graph()
+    >>> nx.draw(G, pos=nx.forceatlas2_layout(G))
+    """
+    import numpy as np
+
+    # parse optional pos positions
+    if pos is None:
+        pos = nx.random_layout(G, dim=dim)
+    else:
+        dim = len(next(iter(pos.values())))
+
+    # default node positions proportional to the input dimensions
+    # (if it exists)
+    max_dim = 1
+    min_dim = 0
+    # check if we have a valid pos else just return (empty graph)
+    if pos:
+        max_dim = np.array([max(i) for i in pos.values()]).max()
+        min_dim = np.array([min(i) for i in pos.values()]).min()
+    else:
+        return pos
+
+    pos_arr = np.random.rand(len(G), dim) * max_dim - min_dim
+
+    mass = np.zeros(len(G))
+    size = np.zeros(len(G))
+
+    # Only adjust for size when the users specifies size other than default (1)
+    adjust_sizes = False
+    if node_size is None:
+        node_size = {}
+    else:
+        adjust_sizes = True
+
+    if node_mass is None:
+        node_mass = {}
+
+    for idx, node in enumerate(G.nodes()):
+        if node in pos:
+            pos_arr[idx] = pos[node].copy()
+        mass[idx] = node_mass.get(node, G.degree(node) + 1)
+        size[idx] = node_size.get(node, 1)
+
+    n = len(G)
+    gravities = np.zeros((n, dim))
+    attraction = np.zeros((n, dim))
+    repulsion = np.zeros((n, dim))
+    A = nx.to_numpy_array(G, weight=weight)
+
+    speed = 1
+    speed_efficiency = 1
+    swing = 1
+    traction = 1
+    for idx in range(n_iter):
+        # compute pairwise difference
+        diff = pos_arr[:, None] - pos_arr[None]
+        # compute pairwise distance
+        distance = np.linalg.norm(diff, axis=-1)
+
+        # linear attraction
+        if linlog:
+            attraction = -np.log(1 + distance) / distance
+            np.fill_diagonal(attraction, 0)
+            attraction = np.einsum("ij, ij -> ij", attraction, A)
+            attraction = np.einsum("ijk, ij -> ik", diff, attraction)
+
+        else:
+            attraction = -np.einsum("ijk, ij -> ik", diff, A)
+
+        if distributed_action:
+            attraction /= mass[:, None]
+
+        # repulsion
+        tmp = mass[:, None] @ mass[None]
+        if adjust_sizes:
+            distance += -size[:, None] - size[None]
+
+        d2 = distance**2
+        # remove self-interaction
+        np.fill_diagonal(tmp, 0)
+        np.fill_diagonal(d2, 0)
+        factor = (tmp / d2) * scaling_ratio
+        np.fill_diagonal(factor, 0)
+        repulsion = np.einsum("ijk, ij -> ik", diff, factor)
+
+        # gravity
+        gravities = (
+            -gravity
+            * mass[:, None]
+            * pos_arr
+            / np.linalg.norm(pos_arr, axis=-1)[:, None]
+        )
+
+        if strong_gravity:
+            gravities *= np.linalg.norm(pos_arr, axis=-1)[:, None]
+        # total forces
+        update = attraction + repulsion + gravities
+
+        # compute total swing and traction
+        swing += (mass * np.linalg.norm(pos_arr - update, axis=-1)).sum()
+        traction += (0.5 * mass * np.linalg.norm(pos_arr + update, axis=-1)).sum()
+
+        speed, speed_efficiency = estimate_factor(
+            n,
+            swing,
+            traction,
+            speed,
+            speed_efficiency,
+            jitter_tolerance,
+        )
+
+        # update pos
+        if adjust_sizes:
+            swinging = mass * np.linalg.norm(update, axis=-1)
+            factor = 0.1 * speed / (1 + np.sqrt(speed * swinging))
+            df = np.linalg.norm(update, axis=-1)
+            factor = np.minimum(factor * df, 10.0 * np.ones(df.shape)) / df
+        else:
+            swinging = mass * np.linalg.norm(update, axis=-1)
+            factor = speed / (1 + np.sqrt(speed * swinging))
+
+        pos_arr += update * factor[:, None]
+        if abs((update * factor[:, None]).sum()) < 1e-10:
+            print(f"Breaking after {idx}")
+            break
+
+    return {node: pos_arr[idx] for idx, node in enumerate(G.nodes())}
 
 
 def rescale_layout(pos, scale=1):
